@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { useAuth } from '../auth/AuthContext'
 import { api } from '../lib/api'
-import { getTalhoes, upsertTalhoes, type TalhaoCache } from '../lib/db'
+import { getTalhoes, upsertCache, upsertTalhoes, type TalhaoCache } from '../lib/db'
 
 interface ApiRow {
   id: string
@@ -26,11 +26,13 @@ export function TalhoesScreen() {
     setRefreshing(true)
     setError(null)
     try {
-      const [talhoesRes, fazendasRes, cultivaresRes, safrasRes] = await Promise.all([
+      const [talhoesRes, fazendasRes, cultivaresRes, safrasRes, pragasRes, doencasRes] = await Promise.all([
         api.get<ApiRow[]>('/talhoes'),
         api.get<ApiRow[]>('/fazendas'),
         api.get<ApiRow[]>('/cultivares'),
         api.get<ApiRow[]>('/safras'),
+        api.get<ApiRow[]>('/pragas-catalogo'),
+        api.get<ApiRow[]>('/doencas-catalogo'),
       ])
 
       const fazendaNomes = new Map(fazendasRes.data.map((f) => [f.id, String(f.nome ?? '')]))
@@ -47,6 +49,14 @@ export function TalhoesScreen() {
       }))
 
       await upsertTalhoes(rows)
+      await upsertCache(
+        'pragas_catalogo',
+        pragasRes.data.map((p) => ({ id: p.id, nome_comum: String(p.nome_comum ?? p.id) })),
+      )
+      await upsertCache(
+        'doencas_catalogo',
+        doencasRes.data.map((d) => ({ id: d.id, nome: String(d.nome ?? d.id) })),
+      )
       setTalhoes(rows)
     } catch {
       setError('Não foi possível sincronizar. Mostrando dados salvos localmente.')

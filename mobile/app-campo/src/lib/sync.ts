@@ -4,8 +4,10 @@ import { api } from './api'
 import {
   listFotografiasLocais,
   listInspecoesLocais,
+  listQueue,
   updateFotografiaLocalStatus,
   updateInspecaoLocalStatus,
+  updateQueueStatus,
 } from './db'
 
 export interface SyncResult {
@@ -115,4 +117,132 @@ export async function syncPendingFotografias(): Promise<SyncResult> {
   }
 
   return { synced, failed }
+}
+
+// Versao generica de syncPendingInspecoes/Fotografias para as entidades mais
+// novas (aplicacoes, analises de solo, ocorrencias de pragas/doencas): mesmo
+// padrao (pendente/erro -> POST no endpoint -> POST em sincronizacao-log),
+// parametrizado para nao repetir o for-loop 4 vezes.
+async function syncQueue<T>(
+  queueKey: string,
+  entidadeReferenciada: string,
+  endpoint: string,
+  buildPayload: (payload: T) => Record<string, unknown>,
+): Promise<SyncResult> {
+  const pendentes = (await listQueue<T>(queueKey)).filter((i) => i.status === 'pendente' || i.status === 'erro')
+  const dispositivoId = await getOrCreateDeviceId()
+
+  let synced = 0
+  let failed = 0
+
+  for (const item of pendentes) {
+    try {
+      const { data } = await api.post(endpoint, buildPayload(item.payload))
+
+      await api.post('/sincronizacao-log', {
+        dispositivo_id: dispositivoId,
+        entidade_referenciada: entidadeReferenciada,
+        entidade_id: data.id,
+        operacao: 'criar',
+        timestamp_local: item.criado_em_local,
+      })
+
+      await updateQueueStatus(queueKey, item.id, 'sincronizado', data.id)
+      synced++
+    } catch {
+      await updateQueueStatus(queueKey, item.id, 'erro', undefined, 'Falha ao sincronizar — será reenviada')
+      failed++
+    }
+  }
+
+  return { synced, failed }
+}
+
+export interface AplicacaoPayload {
+  talhao_id: string
+  talhao_codigo: string
+  produto: string | null
+  ingrediente_ativo: string | null
+  dose: string | null
+  data: string | null
+  volume_calda_l_ha: string | null
+  tecnologia_aplicacao: string | null
+}
+
+export function syncPendingAplicacoes(): Promise<SyncResult> {
+  return syncQueue<AplicacaoPayload>('aplicacoes', 'aplicacoes', '/aplicacoes', (p) => ({
+    talhao_id: p.talhao_id,
+    produto: p.produto,
+    ingrediente_ativo: p.ingrediente_ativo,
+    dose: p.dose ? Number(p.dose) : null,
+    data: p.data,
+    volume_calda_l_ha: p.volume_calda_l_ha ? Number(p.volume_calda_l_ha) : null,
+    tecnologia_aplicacao: p.tecnologia_aplicacao,
+  }))
+}
+
+export interface AnaliseSoloPayload {
+  talhao_id: string
+  talhao_codigo: string
+  data: string | null
+  ph: string | null
+  materia_organica: string | null
+}
+
+export function syncPendingAnalisesSolo(): Promise<SyncResult> {
+  return syncQueue<AnaliseSoloPayload>('analises_solo', 'analises_solo', '/analises-solo', (p) => ({
+    talhao_id: p.talhao_id,
+    data: p.data,
+    ph: p.ph ? Number(p.ph) : null,
+    materia_organica: p.materia_organica ? Number(p.materia_organica) : null,
+  }))
+}
+
+export interface OcorrenciaPragaPayload {
+  talhao_id: string
+  talhao_codigo: string
+  praga_id: string
+  praga_nome: string
+  estadio: string | null
+  populacao_estimada: string | null
+  nivel_dano: string | null
+  nivel_controle: string | null
+  data: string | null
+}
+
+export function syncPendingOcorrenciasPragas(): Promise<SyncResult> {
+  return syncQueue<OcorrenciaPragaPayload>('ocorrencias_pragas', 'ocorrencias_pragas', '/ocorrencias-pragas', (p) => ({
+    talhao_id: p.talhao_id,
+    praga_id: p.praga_id,
+    estadio: p.estadio,
+    populacao_estimada: p.populacao_estimada ? Number(p.populacao_estimada) : null,
+    nivel_dano: p.nivel_dano,
+    nivel_controle: p.nivel_controle,
+    data: p.data,
+  }))
+}
+
+export interface OcorrenciaDoencaPayload {
+  talhao_id: string
+  talhao_codigo: string
+  doenca_id: string
+  doenca_nome: string
+  severidade_percentual: string | null
+  estadio_cultura: string | null
+  data: string | null
+}
+
+export function syncPendingOcorrenciasDoencas(): Promise<SyncResult> {
+  return syncQueue<OcorrenciaDoencaPayload>(
+    'ocorrencias_doencas',
+    'ocorrencias_doencas',
+    '/ocorrencias-doencas',
+    (p) => ({
+      talhao_id: p.talhao_id,
+      doenca_id: p.doenca_id,
+      severidade_percentual: p.severidade_percentual ? Number(p.severidade_percentual) : null,
+      estadio_cultura: p.estadio_cultura,
+      data: p.data,
+    }),
+  )
 }

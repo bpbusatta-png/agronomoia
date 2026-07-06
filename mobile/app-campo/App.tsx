@@ -1,13 +1,27 @@
 import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { AuthProvider, useAuth } from './src/auth/AuthContext'
+import { AnalisesSoloScreen } from './src/screens/AnalisesSoloScreen'
+import { AplicacoesScreen } from './src/screens/AplicacoesScreen'
 import { FotografiasScreen } from './src/screens/FotografiasScreen'
 import { InspecoesScreen } from './src/screens/InspecoesScreen'
 import { LoginScreen } from './src/screens/LoginScreen'
+import { OcorrenciasDoencasScreen } from './src/screens/OcorrenciasDoencasScreen'
+import { OcorrenciasPragasScreen } from './src/screens/OcorrenciasPragasScreen'
 import { TalhoesScreen } from './src/screens/TalhoesScreen'
 
-type Tab = 'talhoes' | 'inspecoes' | 'fotografias'
+const TABS = [
+  { key: 'talhoes', label: 'Talhões' },
+  { key: 'inspecoes', label: 'Inspeções' },
+  { key: 'fotografias', label: 'Fotos' },
+  { key: 'aplicacoes', label: 'Aplicações' },
+  { key: 'solo', label: 'Solo' },
+  { key: 'pragas', label: 'Pragas' },
+  { key: 'doencas', label: 'Doenças' },
+] as const
+
+type Tab = (typeof TABS)[number]['key']
 
 function Root() {
   const { isAuthenticated, loading } = useAuth()
@@ -29,17 +43,24 @@ function Root() {
         {tab === 'talhoes' && <TalhoesScreen />}
         {tab === 'inspecoes' && <InspecoesScreen />}
         {tab === 'fotografias' && <FotografiasScreen />}
+        {tab === 'aplicacoes' && <AplicacoesScreen />}
+        {tab === 'solo' && <AnalisesSoloScreen />}
+        {tab === 'pragas' && <OcorrenciasPragasScreen />}
+        {tab === 'doencas' && <OcorrenciasDoencasScreen />}
       </View>
       <View style={styles.tabBar}>
-        <Pressable style={styles.tabItem} onPress={() => setTab('talhoes')} testID="tab-talhoes">
-          <Text style={tab === 'talhoes' ? styles.tabTextActive : styles.tabText}>Talhões</Text>
-        </Pressable>
-        <Pressable style={styles.tabItem} onPress={() => setTab('inspecoes')} testID="tab-inspecoes">
-          <Text style={tab === 'inspecoes' ? styles.tabTextActive : styles.tabText}>Inspeções</Text>
-        </Pressable>
-        <Pressable style={styles.tabItem} onPress={() => setTab('fotografias')} testID="tab-fotografias">
-          <Text style={tab === 'fotografias' ? styles.tabTextActive : styles.tabText}>Fotos</Text>
-        </Pressable>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {TABS.map((t) => (
+            <Pressable
+              key={t.key}
+              style={styles.tabItem}
+              onPress={() => setTab(t.key)}
+              testID={`tab-${t.key}`}
+            >
+              <Text style={tab === t.key ? styles.tabTextActive : styles.tabText}>{t.label}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
       </View>
     </View>
   )
@@ -71,8 +92,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   tabItem: {
-    flex: 1,
     paddingVertical: 12,
+    paddingHorizontal: 16,
     alignItems: 'center',
   },
   tabText: {

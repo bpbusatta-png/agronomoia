@@ -9,6 +9,16 @@ export interface TalhaoCache {
   area_ha: string | null
 }
 
+export interface PragaCatalogoCache {
+  id: string
+  nome_comum: string
+}
+
+export interface DoencaCatalogoCache {
+  id: string
+  nome: string
+}
+
 export type SyncStatus = 'pendente' | 'sincronizado' | 'erro'
 
 export interface InspecaoLocal {
@@ -79,6 +89,22 @@ async function openSqliteDb() {
       status TEXT,
       remote_id TEXT,
       erro_mensagem TEXT
+    );
+    CREATE TABLE IF NOT EXISTS reference_cache (
+      cache_key TEXT NOT NULL,
+      id TEXT NOT NULL,
+      data TEXT,
+      PRIMARY KEY (cache_key, id)
+    );
+    CREATE TABLE IF NOT EXISTS local_queue (
+      queue_key TEXT NOT NULL,
+      id TEXT NOT NULL,
+      data TEXT,
+      criado_em_local TEXT,
+      status TEXT,
+      remote_id TEXT,
+      erro_mensagem TEXT,
+      PRIMARY KEY (queue_key, id)
     );
   `)
   return db
@@ -302,4 +328,139 @@ export async function updateFotografiaLocalStatus(
     erroMensagem ?? null,
     id,
   ])
+}
+
+// --- Cache de referencia generico (catalogos somente-leitura: pragas,
+// doencas, etc. -- mesmo padrao de talhoes_cache, mas sem precisar de uma
+// tabela/funcao nova por catalogo) ---
+
+export async function upsertCache<T extends { id: string }>(cacheKey: string, items: T[]): Promise<void> {
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(`agronomo_ia_cache_${cacheKey}`, JSON.stringify(items))
+    }
+    return
+  }
+  const db = await getSqliteDb()
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM reference_cache WHERE cache_key = ?', [cacheKey])
+    for (const item of items) {
+      await db.runAsync('INSERT INTO reference_cache (cache_key, id, data) VALUES (?, ?, ?)', [
+        cacheKey,
+        item.id,
+        JSON.stringify(item),
+      ])
+    }
+  })
+}
+
+export async function getCache<T>(cacheKey: string): Promise<T[]> {
+  if (Platform.OS === 'web') {
+    if (typeof window === 'undefined') return []
+    const stored = window.localStorage.getItem(`agronomo_ia_cache_${cacheKey}`)
+    return stored ? JSON.parse(stored) : []
+  }
+  const db = await getSqliteDb()
+  const rows = await db.getAllAsync<{ data: string }>('SELECT data FROM reference_cache WHERE cache_key = ?', [
+    cacheKey,
+  ])
+  return rows.map((r) => JSON.parse(r.data))
+}
+
+// --- Fila offline generica (cadastro offline + sincronizacao para
+// entidades novas: aplicacoes, analises de solo, ocorrencias de pragas/
+// doencas -- mesmo padrao de inspecoes_locais/fotografias_locais, sem
+// precisar de uma tabela/funcao nova por entidade) ---
+
+export interface QueueItem<T> {
+  id: string
+  payload: T
+  criado_em_local: string
+  status: SyncStatus
+  remote_id: string | null
+  erro_mensagem: string | null
+}
+
+async function getWebQueueRaw(queueKey: string): Promise<QueueItem<unknown>[]> {
+  if (typeof window === 'undefined') return []
+  const stored = window.localStorage.getItem(`agronomo_ia_queue_${queueKey}`)
+  return stored ? JSON.parse(stored) : []
+}
+
+async function setWebQueueRaw(queueKey: string, items: QueueItem<unknown>[]): Promise<void> {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(`agronomo_ia_queue_${queueKey}`, JSON.stringify(items))
+  }
+}
+
+export async function addToQueue<T extends object>(queueKey: string, payload: T): Promise<QueueItem<T>> {
+  const item: QueueItem<T> = {
+    id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    payload,
+    criado_em_local: new Date().toISOString(),
+    status: 'pendente',
+    remote_id: null,
+    erro_mensagem: null,
+  }
+
+  if (Platform.OS === 'web') {
+    const items = await getWebQueueRaw(queueKey)
+    items.unshift(item as QueueItem<unknown>)
+    await setWebQueueRaw(queueKey, items)
+    return item
+  }
+
+  const db = await getSqliteDb()
+  await db.runAsync(
+    `INSERT INTO local_queue (queue_key, id, data, criado_em_local, status, remote_id, erro_mensagem)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [queueKey, item.id, JSON.stringify(payload), item.criado_em_local, item.status, item.remote_id, item.erro_mensagem],
+  )
+  return item
+}
+
+export async function listQueue<T>(queueKey: string): Promise<QueueItem<T>[]> {
+  if (Platform.OS === 'web') {
+    const items = (await getWebQueueRaw(queueKey)) as QueueItem<T>[]
+    return items.sort((a, b) => b.criado_em_local.localeCompare(a.criado_em_local))
+  }
+  const db = await getSqliteDb()
+  const rows = await db.getAllAsync<{
+    id: string
+    data: string
+    criado_em_local: string
+    status: SyncStatus
+    remote_id: string | null
+    erro_mensagem: string | null
+  }>('SELECT * FROM local_queue WHERE queue_key = ? ORDER BY criado_em_local DESC', [queueKey])
+  return rows.map((r) => ({
+    id: r.id,
+    payload: JSON.parse(r.data) as T,
+    criado_em_local: r.criado_em_local,
+    status: r.status,
+    remote_id: r.remote_id,
+    erro_mensagem: r.erro_mensagem,
+  }))
+}
+
+export async function updateQueueStatus(
+  queueKey: string,
+  id: string,
+  status: SyncStatus,
+  remoteId?: string,
+  erroMensagem?: string,
+): Promise<void> {
+  if (Platform.OS === 'web') {
+    const items = await getWebQueueRaw(queueKey)
+    const updated = items.map((i) =>
+      i.id === id ? { ...i, status, remote_id: remoteId ?? i.remote_id, erro_mensagem: erroMensagem ?? null } : i,
+    )
+    await setWebQueueRaw(queueKey, updated)
+    return
+  }
+  const db = await getSqliteDb()
+  await db.runAsync(
+    'UPDATE local_queue SET status = ?, remote_id = ?, erro_mensagem = ? WHERE queue_key = ? AND id = ?',
+    [status, remoteId ?? null, erroMensagem ?? null, queueKey, id],
+  )
 }
