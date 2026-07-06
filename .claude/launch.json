@@ -12,6 +12,12 @@
       "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
       "runtimeArgs": ["frontend/dashboard/node_modules/vite/bin/vite.js", "frontend/dashboard", "--port", "5173"],
       "port": 5173
+    },
+    {
+      "name": "mobile-app-campo",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["mobile/app-campo/node_modules/expo/bin/cli", "start", "mobile/app-campo", "--web", "--localhost"],
+      "port": 8081
     }
   ]
 }

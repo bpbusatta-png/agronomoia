@@ -107,6 +107,16 @@ npm run dev
 ```
 Acesse http://localhost:5173 — login com o usuário criado pelo seed. Detalhes em [frontend/dashboard/README.md](frontend/dashboard/README.md).
 
+### App de campo (mobile)
+
+```
+cd mobile/app-campo
+npm install
+cp .env.example .env
+npx expo start
+```
+Escaneie o QR code com o Expo Go (Android/iOS) ou pressione `w` para abrir no navegador. Primeira leva: login + lista de talhões (somente leitura), com cache local. Detalhes em [mobile/app-campo/README.md](mobile/app-campo/README.md).
+
 ## Autenticação e permissões
 
 - **JWT**: `POST /api/auth/login` (form `username`/`password`, padrão OAuth2) retorna `access_token` (30 min) + `refresh_token` (7 dias). `POST /api/auth/refresh` renova o par a partir do refresh token.
@@ -126,4 +136,4 @@ Acesse http://localhost:5173 — login com o usuário criado pelo seed. Detalhes
 
 ## Status
 
-Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Dashboard web (React + TypeScript + Tailwind) com login e CRUD completo de todas as trilhas — núcleo organizacional, monitoramento de campo e inteligência especializada (incluindo o fluxo de validação humana obrigatória de plantas atípicas) — validado no navegador. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md) — provavelmente o app mobile de campo, já que o dashboard cobre o schema inteiro.
+Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Dashboard web (React + TypeScript + Tailwind) com login e CRUD completo de todas as trilhas — núcleo organizacional, monitoramento de campo e inteligência especializada (incluindo o fluxo de validação humana obrigatória de plantas atípicas) — validado no navegador. App de campo (React Native + Expo) com login e lista de talhões (somente leitura) e cache local, validado via Expo web. Próximos passos: cadastro offline de inspeções/fotos com fila de sincronização no app mobile ([docs/01-trilha-a-plataforma/arquitetura-base.md](docs/01-trilha-a-plataforma/arquitetura-base.md), Trilha D), ou revisão/ajustes do que já existe. Contexto geral em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
