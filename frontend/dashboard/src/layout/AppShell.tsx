@@ -28,6 +28,20 @@ const NAV_SECTIONS = [
       { to: '/fotografias', label: 'Fotografias' },
     ],
   },
+  {
+    title: 'Inteligência',
+    items: [
+      { to: '/pragas-catalogo', label: 'Catálogo de Pragas' },
+      { to: '/ocorrencias-pragas', label: 'Ocorrências de Pragas' },
+      { to: '/doencas-catalogo', label: 'Catálogo de Doenças' },
+      { to: '/ocorrencias-doencas', label: 'Ocorrências de Doenças' },
+      { to: '/plantas-atipicas', label: 'Plantas Atípicas' },
+      { to: '/ndvi-leituras', label: 'NDVI' },
+      { to: '/produtividade-estimativas', label: 'Produtividade' },
+      { to: '/colheita', label: 'Colheita' },
+      { to: '/modelos-versoes', label: 'Modelos de IA' },
+    ],
+  },
 ]
 
 export function AppShell() {

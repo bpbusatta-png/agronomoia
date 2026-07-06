@@ -5,11 +5,12 @@ import type { EntityConfig, SelectOption } from '../entities/types'
 interface Props {
   config: EntityConfig
   refConfigs: Record<string, EntityConfig>
+  renderExtraAction?: (item: Row, reload: () => void) => import('react').ReactNode
 }
 
 type Row = Record<string, unknown> & { id: string }
 
-export function EntityCrudPage({ config, refConfigs }: Props) {
+export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props) {
   const [items, setItems] = useState<Row[]>([])
   const [refOptions, setRefOptions] = useState<Record<string, SelectOption[]>>({})
   const [loading, setLoading] = useState(true)
@@ -106,6 +107,10 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
     try {
       const payload: Record<string, unknown> = {}
       config.fields.forEach((f) => {
+        if (f.type === 'boolean') {
+          payload[f.name] = formValues[f.name] === 'true'
+          return
+        }
         const raw = formValues[f.name]
         if (raw === undefined || raw === '') {
           payload[f.name] = null
@@ -144,6 +149,7 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
       const match = options.find((o) => o.value === value)
       if (match) return match.label
     }
+    if (typeof value === 'boolean') return value ? 'Sim' : 'Não'
     if (typeof value === 'object') return JSON.stringify(value)
     return String(value)
   }
@@ -190,6 +196,7 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
                     </td>
                   ))}
                   <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
+                    {renderExtraAction?.(item, load)}
                     <button onClick={() => openEdit(item)} className="text-blue-600 hover:underline">
                       Editar
                     </button>
@@ -206,7 +213,10 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-10">
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md space-y-3">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto space-y-3"
+          >
             <h2 className="text-lg font-semibold text-gray-800">
               {editing ? `Editar ${config.title}` : `Novo(a) ${config.title}`}
             </h2>
@@ -234,6 +244,13 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
                     rows={3}
                     onChange={(e) => setFormValues((v) => ({ ...v, [f.name]: e.target.value }))}
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono"
+                  />
+                ) : f.type === 'boolean' ? (
+                  <input
+                    type="checkbox"
+                    checked={formValues[f.name] === 'true'}
+                    onChange={(e) => setFormValues((v) => ({ ...v, [f.name]: e.target.checked ? 'true' : 'false' }))}
+                    className="h-4 w-4"
                   />
                 ) : (
                   <input

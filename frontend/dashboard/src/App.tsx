@@ -7,19 +7,28 @@ import {
   allConfigs,
   analisesSoloConfig,
   aplicacoesConfig,
+  colheitaConfig,
   contratosConfig,
   cooperadosConfig,
   cultivaresConfig,
+  doencasCatalogoConfig,
   empresasConfig,
   fazendasConfig,
   fotografiasConfig,
   historicoClimaticoConfig,
   inspecoesConfig,
+  modelosVersoesConfig,
+  ndviLeiturasConfig,
+  ocorrenciasDoencasConfig,
+  ocorrenciasPragasConfig,
+  pragasCatalogoConfig,
+  produtividadeEstimativasConfig,
   safrasConfig,
   talhoesConfig,
 } from './entities/configs'
 import { AppShell } from './layout/AppShell'
 import { HomePage } from './pages/HomePage'
+import { PlantasAtipicasPage } from './pages/PlantasAtipicasPage'
 
 function App() {
   return (
@@ -62,6 +71,36 @@ function App() {
               path="/fotografias"
               element={<EntityCrudPage config={fotografiasConfig} refConfigs={allConfigs} />}
             />
+            <Route
+              path="/modelos-versoes"
+              element={<EntityCrudPage config={modelosVersoesConfig} refConfigs={allConfigs} />}
+            />
+            <Route
+              path="/pragas-catalogo"
+              element={<EntityCrudPage config={pragasCatalogoConfig} refConfigs={allConfigs} />}
+            />
+            <Route
+              path="/doencas-catalogo"
+              element={<EntityCrudPage config={doencasCatalogoConfig} refConfigs={allConfigs} />}
+            />
+            <Route
+              path="/ocorrencias-pragas"
+              element={<EntityCrudPage config={ocorrenciasPragasConfig} refConfigs={allConfigs} />}
+            />
+            <Route
+              path="/ocorrencias-doencas"
+              element={<EntityCrudPage config={ocorrenciasDoencasConfig} refConfigs={allConfigs} />}
+            />
+            <Route path="/plantas-atipicas" element={<PlantasAtipicasPage />} />
+            <Route
+              path="/ndvi-leituras"
+              element={<EntityCrudPage config={ndviLeiturasConfig} refConfigs={allConfigs} />}
+            />
+            <Route
+              path="/produtividade-estimativas"
+              element={<EntityCrudPage config={produtividadeEstimativasConfig} refConfigs={allConfigs} />}
+            />
+            <Route path="/colheita" element={<EntityCrudPage config={colheitaConfig} refConfigs={allConfigs} />} />
           </Route>
         </Route>
       </Routes>
