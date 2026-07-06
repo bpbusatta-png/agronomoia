@@ -8,30 +8,55 @@ from core.security import hash_password
 from models import (
     AnaliseSolo,
     Aplicacao,
+    Colheita,
     Contrato,
     Cooperado,
     Cultivar,
+    DoencaCatalogo,
     Empresa,
     Fazenda,
     Fotografia,
     HistoricoClimatico,
     Inspecao,
+    ModeloVersao,
+    NdviLeitura,
+    OcorrenciaDoenca,
+    OcorrenciaPraga,
     Papel,
+    PlantaAtipicaOcorrencia,
+    PragaCatalogo,
+    ProdutividadeEstimativa,
     Safra,
     Talhao,
     Usuario,
+    ValidacaoHumana,
 )
 from schemas.analise_solo import AnaliseSoloCreate, AnaliseSoloUpdate
 from schemas.aplicacao import AplicacaoCreate, AplicacaoUpdate
+from schemas.colheita import ColheitaCreate, ColheitaUpdate
 from schemas.contrato import ContratoCreate, ContratoUpdate
 from schemas.cooperado import CooperadoCreate, CooperadoUpdate
 from schemas.cultivar import CultivarCreate, CultivarUpdate
+from schemas.doenca_catalogo import DoencaCatalogoCreate, DoencaCatalogoUpdate
 from schemas.empresa import EmpresaCreate, EmpresaUpdate
 from schemas.fazenda import FazendaCreate, FazendaUpdate
 from schemas.fotografia import FotografiaCreate, FotografiaUpdate
 from schemas.historico_climatico import HistoricoClimaticoCreate, HistoricoClimaticoUpdate
 from schemas.inspecao import InspecaoCreate, InspecaoUpdate
+from schemas.modelo_versao import ModeloVersaoCreate, ModeloVersaoUpdate
+from schemas.ndvi_leitura import NdviLeituraCreate, NdviLeituraUpdate
+from schemas.ocorrencia_doenca import OcorrenciaDoencaCreate, OcorrenciaDoencaUpdate
+from schemas.ocorrencia_praga import OcorrenciaPragaCreate, OcorrenciaPragaUpdate
 from schemas.papel import PapelCreate, PapelUpdate
+from schemas.planta_atipica_ocorrencia import (
+    PlantaAtipicaOcorrenciaCreate,
+    PlantaAtipicaOcorrenciaUpdate,
+)
+from schemas.praga_catalogo import PragaCatalogoCreate, PragaCatalogoUpdate
+from schemas.produtividade_estimativa import (
+    ProdutividadeEstimativaCreate,
+    ProdutividadeEstimativaUpdate,
+)
 from schemas.safra import SafraCreate, SafraUpdate
 from schemas.talhao import TalhaoCreate, TalhaoUpdate
 from schemas.usuario import UsuarioCreate, UsuarioUpdate
@@ -115,3 +140,21 @@ historico_climatico = CRUDBase[HistoricoClimatico, HistoricoClimaticoCreate, His
 )
 analises_solo = CRUDBase[AnaliseSolo, AnaliseSoloCreate, AnaliseSoloUpdate](AnaliseSolo)
 fotografias = CRUDBase[Fotografia, FotografiaCreate, FotografiaUpdate](Fotografia)
+
+modelos_versoes = CRUDBase[ModeloVersao, ModeloVersaoCreate, ModeloVersaoUpdate](ModeloVersao)
+pragas_catalogo = CRUDBase[PragaCatalogo, PragaCatalogoCreate, PragaCatalogoUpdate](PragaCatalogo)
+doencas_catalogo = CRUDBase[DoencaCatalogo, DoencaCatalogoCreate, DoencaCatalogoUpdate](DoencaCatalogo)
+ocorrencias_pragas = CRUDBase[OcorrenciaPraga, OcorrenciaPragaCreate, OcorrenciaPragaUpdate](OcorrenciaPraga)
+ocorrencias_doencas = CRUDBase[OcorrenciaDoenca, OcorrenciaDoencaCreate, OcorrenciaDoencaUpdate](OcorrenciaDoenca)
+plantas_atipicas_ocorrencias = CRUDBase[
+    PlantaAtipicaOcorrencia, PlantaAtipicaOcorrenciaCreate, PlantaAtipicaOcorrenciaUpdate
+](PlantaAtipicaOcorrencia)
+ndvi_leituras = CRUDBase[NdviLeitura, NdviLeituraCreate, NdviLeituraUpdate](NdviLeitura)
+produtividade_estimativas = CRUDBase[
+    ProdutividadeEstimativa, ProdutividadeEstimativaCreate, ProdutividadeEstimativaUpdate
+](ProdutividadeEstimativa)
+colheita = CRUDBase[Colheita, ColheitaCreate, ColheitaUpdate](Colheita)
+
+# Somente leitura via API -- escrita acontece apenas internamente, disparada
+# pelo endpoint POST /plantas-atipicas/{id}/validar (ver api/routes/inteligencia.py).
+validacoes_humanas = CRUDBase[ValidacaoHumana, BaseModel, BaseModel](ValidacaoHumana)

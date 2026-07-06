@@ -21,9 +21,15 @@ def crud_router(
     tag: str,
     read_dep: Callable = get_current_user,
     write_dep: Optional[Callable] = None,
+    create_dep: Optional[Callable] = None,
+    update_dep: Optional[Callable] = None,
+    delete_dep: Optional[Callable] = None,
     inject_usuario_field: Optional[str] = None,
 ) -> APIRouter:
     write_dep = write_dep or read_dep
+    create_dep = create_dep or write_dep
+    update_dep = update_dep or write_dep
+    delete_dep = delete_dep or write_dep
     router = APIRouter(prefix=prefix, tags=[tag])
 
     @router.get("", response_model=list[read_schema])
@@ -38,14 +44,14 @@ def crud_router(
         return obj
 
     @router.post("", response_model=read_schema, status_code=201)
-    def create_(obj_in: create_schema, db: Session = Depends(get_db), current_user=Depends(write_dep)):
+    def create_(obj_in: create_schema, db: Session = Depends(get_db), current_user=Depends(create_dep)):
         extra = {inject_usuario_field: current_user.id} if inject_usuario_field else {}
         obj = crud.create(db, obj_in, **extra)
         log_operacao(current_user, tag, "criar", obj.id)
         return obj
 
     @router.put("/{id}", response_model=read_schema)
-    def update_(id: UUID, obj_in: update_schema, db: Session = Depends(get_db), current_user=Depends(write_dep)):
+    def update_(id: UUID, obj_in: update_schema, db: Session = Depends(get_db), current_user=Depends(update_dep)):
         obj = crud.get(db, id)
         if not obj:
             raise HTTPException(status_code=404, detail=f"{tag} não encontrado")
@@ -54,7 +60,7 @@ def crud_router(
         return obj
 
     @router.delete("/{id}", status_code=204)
-    def delete_(id: UUID, db: Session = Depends(get_db), current_user=Depends(write_dep)):
+    def delete_(id: UUID, db: Session = Depends(get_db), current_user=Depends(delete_dep)):
         obj = crud.remove(db, id)
         if not obj:
             raise HTTPException(status_code=404, detail=f"{tag} não encontrado")

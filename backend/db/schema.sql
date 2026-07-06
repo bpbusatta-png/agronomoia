@@ -210,7 +210,10 @@ CREATE TABLE ocorrencias_doencas (
   data DATE DEFAULT CURRENT_DATE
 );
 
--- Tabela mais sensível do sistema: validado_por é obrigatório, sem excecao (ver Trilha C)
+-- Tabela mais sensivel do sistema: toda ocorrencia nasce 'pendente_validacao'
+-- (validado_por NULL) e so recebe validado_por quando um Administrador/RT
+-- valida via endpoint dedicado (ver validacoes_humanas, Trilha C). Nao e
+-- possivel setar validado_por na criacao nem em updates diretos.
 CREATE TABLE plantas_atipicas_ocorrencias (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fotografia_id UUID REFERENCES fotografias(id),
@@ -221,7 +224,7 @@ CREATE TABLE plantas_atipicas_ocorrencias (
   recomendacao VARCHAR(30), -- manter, eliminar
   modelo_versao_id UUID REFERENCES modelos_versoes(id),
   confianca_modelo NUMERIC(4,3),
-  validado_por UUID REFERENCES usuarios(id) NOT NULL,
+  validado_por UUID REFERENCES usuarios(id),
   status VARCHAR(20) DEFAULT 'pendente_validacao',
   data DATE DEFAULT CURRENT_DATE
 );

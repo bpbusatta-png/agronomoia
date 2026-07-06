@@ -102,12 +102,14 @@ Cria os 5 papéis (`Administrador`, `Agronomo_RT`, `Tecnico_Campo`, `Cooperado`,
 - **JWT**: `POST /api/auth/login` (form `username`/`password`, padrão OAuth2) retorna `access_token` (30 min) + `refresh_token` (7 dias). `POST /api/auth/refresh` renova o par a partir do refresh token.
 - **RBAC**: todo endpoint exige autenticação (`Authorization: Bearer <token>`). Leitura (`GET`) é liberada a qualquer papel autenticado. Escrita (`POST`/`PUT`/`DELETE`):
   - `papeis`/`usuarios`: `Administrador`
-  - `cooperados`/`empresas`/`fazendas`/`safras`/`cultivares`/`talhoes`/`contratos`/`historico-climatico`: `Administrador` ou `Agronomo_RT`
-  - `inspecoes`/`aplicacoes`/`analises-solo`/`fotografias`: `Administrador`, `Agronomo_RT` ou `Tecnico_Campo`
+  - `cooperados`/`empresas`/`fazendas`/`safras`/`cultivares`/`talhoes`/`contratos`/`historico-climatico`/`modelos-versoes`/`pragas-catalogo`/`doencas-catalogo`/`ndvi-leituras`/`produtividade-estimativas`: `Administrador` ou `Agronomo_RT`
+  - `inspecoes`/`aplicacoes`/`analises-solo`/`fotografias`/`colheita`: `Administrador`, `Agronomo_RT` ou `Tecnico_Campo`
+  - `ocorrencias-pragas`/`ocorrencias-doencas`/`plantas-atipicas`: `Tecnico_Campo` pode **criar** (`POST`); editar/excluir fica restrito a `Administrador`/`Agronomo_RT` — reflete "técnico cadastra, sem poder de validação final" ([arquitetura-base.md](docs/01-trilha-a-plataforma/arquitetura-base.md))
 - Em `inspecoes` e `fotografias`, o `usuario_id` é preenchido a partir do usuário autenticado (token), nunca aceito do cliente.
+- **Gate humano obrigatório (plantas atípicas)**: toda ocorrência nasce `status='pendente_validacao'` com `validado_por=NULL` — nem o `POST` nem o `PUT` de `/plantas-atipicas` aceitam esses dois campos do cliente. Só `POST /plantas-atipicas/{id}/validar` (restrito a `Administrador`/`Agronomo_RT`) define `validado_por`/`status`/`recomendacao`, e registra a decisão em `validacoes_humanas` (auditável via `GET /validacoes-humanas`, também restrito a `Administrador`/`Agronomo_RT`).
 - **Logging de auditoria**: toda operação de escrita emite um log JSON estruturado em stdout (`usuario_id`, `usuario_email`, `entidade`, `entidade_id`, `operacao`, `timestamp`) — ver `core/logging.py`.
 - `SECRET_KEY` é obrigatória no `.env` (gerar com `python -c "import secrets; print(secrets.token_hex(32))"`).
 
 ## Status
 
-Fase 0 (fundação e governança), estrutura do repositório, schema de banco de dados aplicado, autenticação/RBAC/logging, CRUD do núcleo organizacional (Trilha A) e das tabelas de monitoramento de campo (Trilha B: inspeções, aplicações, histórico climático, análises de solo, fotografias) validados localmente. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
+Fase 0 (fundação e governança), estrutura do repositório, schema de banco de dados aplicado, autenticação/RBAC/logging, e CRUD completo das Trilhas A (núcleo organizacional) e B (monitoramento de campo, inteligência especializada — pragas/doenças/plantas atípicas/NDVI/produtividade/colheita, com gate humano obrigatório para plantas atípicas) validados localmente. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
