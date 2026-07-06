@@ -22,6 +22,10 @@ from models.ndvi_leitura import NdviLeitura
 from models.produtividade_estimativa import ProdutividadeEstimativa
 from models.colheita import Colheita
 from models.validacao_humana import ValidacaoHumana
+from models.dataset_rotulo import DatasetRotulo
+from models.log_predicao_ia import LogPredicaoIA
+from models.consentimento_lgpd import ConsentimentoLgpd
+from models.sincronizacao_log import SincronizacaoLog
 
 __all__ = [
     "Papel",
@@ -48,4 +52,8 @@ __all__ = [
     "ProdutividadeEstimativa",
     "Colheita",
     "ValidacaoHumana",
+    "DatasetRotulo",
+    "LogPredicaoIA",
+    "ConsentimentoLgpd",
+    "SincronizacaoLog",
 ]

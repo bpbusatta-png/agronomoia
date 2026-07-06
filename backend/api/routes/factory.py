@@ -16,7 +16,7 @@ def crud_router(
     crud: CRUDBase,
     read_schema: Type[BaseModel],
     create_schema: Type[BaseModel],
-    update_schema: Type[BaseModel],
+    update_schema: Optional[Type[BaseModel]] = None,
     prefix: str,
     tag: str,
     read_dep: Callable = get_current_user,
@@ -25,6 +25,8 @@ def crud_router(
     update_dep: Optional[Callable] = None,
     delete_dep: Optional[Callable] = None,
     inject_usuario_field: Optional[str] = None,
+    enable_update: bool = True,
+    enable_delete: bool = True,
 ) -> APIRouter:
     write_dep = write_dep or read_dep
     create_dep = create_dep or write_dep
@@ -50,20 +52,26 @@ def crud_router(
         log_operacao(current_user, tag, "criar", obj.id)
         return obj
 
-    @router.put("/{id}", response_model=read_schema)
-    def update_(id: UUID, obj_in: update_schema, db: Session = Depends(get_db), current_user=Depends(update_dep)):
-        obj = crud.get(db, id)
-        if not obj:
-            raise HTTPException(status_code=404, detail=f"{tag} não encontrado")
-        obj = crud.update(db, obj, obj_in)
-        log_operacao(current_user, tag, "editar", id)
-        return obj
+    if enable_update:
+        if update_schema is None:
+            raise ValueError(f"update_schema é obrigatório quando enable_update=True ({tag})")
 
-    @router.delete("/{id}", status_code=204)
-    def delete_(id: UUID, db: Session = Depends(get_db), current_user=Depends(delete_dep)):
-        obj = crud.remove(db, id)
-        if not obj:
-            raise HTTPException(status_code=404, detail=f"{tag} não encontrado")
-        log_operacao(current_user, tag, "excluir", id)
+        @router.put("/{id}", response_model=read_schema)
+        def update_(id: UUID, obj_in: update_schema, db: Session = Depends(get_db), current_user=Depends(update_dep)):
+            obj = crud.get(db, id)
+            if not obj:
+                raise HTTPException(status_code=404, detail=f"{tag} não encontrado")
+            obj = crud.update(db, obj, obj_in)
+            log_operacao(current_user, tag, "editar", id)
+            return obj
+
+    if enable_delete:
+
+        @router.delete("/{id}", status_code=204)
+        def delete_(id: UUID, db: Session = Depends(get_db), current_user=Depends(delete_dep)):
+            obj = crud.remove(db, id)
+            if not obj:
+                raise HTTPException(status_code=404, detail=f"{tag} não encontrado")
+            log_operacao(current_user, tag, "excluir", id)
 
     return router

@@ -9,15 +9,18 @@ from models import (
     AnaliseSolo,
     Aplicacao,
     Colheita,
+    ConsentimentoLgpd,
     Contrato,
     Cooperado,
     Cultivar,
+    DatasetRotulo,
     DoencaCatalogo,
     Empresa,
     Fazenda,
     Fotografia,
     HistoricoClimatico,
     Inspecao,
+    LogPredicaoIA,
     ModeloVersao,
     NdviLeitura,
     OcorrenciaDoenca,
@@ -27,6 +30,7 @@ from models import (
     PragaCatalogo,
     ProdutividadeEstimativa,
     Safra,
+    SincronizacaoLog,
     Talhao,
     Usuario,
     ValidacaoHumana,
@@ -34,15 +38,18 @@ from models import (
 from schemas.analise_solo import AnaliseSoloCreate, AnaliseSoloUpdate
 from schemas.aplicacao import AplicacaoCreate, AplicacaoUpdate
 from schemas.colheita import ColheitaCreate, ColheitaUpdate
+from schemas.consentimento_lgpd import ConsentimentoLgpdCreate, ConsentimentoLgpdUpdate
 from schemas.contrato import ContratoCreate, ContratoUpdate
 from schemas.cooperado import CooperadoCreate, CooperadoUpdate
 from schemas.cultivar import CultivarCreate, CultivarUpdate
+from schemas.dataset_rotulo import DatasetRotuloCreate, DatasetRotuloUpdate
 from schemas.doenca_catalogo import DoencaCatalogoCreate, DoencaCatalogoUpdate
 from schemas.empresa import EmpresaCreate, EmpresaUpdate
 from schemas.fazenda import FazendaCreate, FazendaUpdate
 from schemas.fotografia import FotografiaCreate, FotografiaUpdate
 from schemas.historico_climatico import HistoricoClimaticoCreate, HistoricoClimaticoUpdate
 from schemas.inspecao import InspecaoCreate, InspecaoUpdate
+from schemas.log_predicao_ia import LogPredicaoIACreate
 from schemas.modelo_versao import ModeloVersaoCreate, ModeloVersaoUpdate
 from schemas.ndvi_leitura import NdviLeituraCreate, NdviLeituraUpdate
 from schemas.ocorrencia_doenca import OcorrenciaDoencaCreate, OcorrenciaDoencaUpdate
@@ -58,6 +65,7 @@ from schemas.produtividade_estimativa import (
     ProdutividadeEstimativaUpdate,
 )
 from schemas.safra import SafraCreate, SafraUpdate
+from schemas.sincronizacao_log import SincronizacaoLogCreate, SincronizacaoLogUpdate
 from schemas.talhao import TalhaoCreate, TalhaoUpdate
 from schemas.usuario import UsuarioCreate, UsuarioUpdate
 
@@ -158,3 +166,13 @@ colheita = CRUDBase[Colheita, ColheitaCreate, ColheitaUpdate](Colheita)
 # Somente leitura via API -- escrita acontece apenas internamente, disparada
 # pelo endpoint POST /plantas-atipicas/{id}/validar (ver api/routes/inteligencia.py).
 validacoes_humanas = CRUDBase[ValidacaoHumana, BaseModel, BaseModel](ValidacaoHumana)
+
+dataset_rotulos = CRUDBase[DatasetRotulo, DatasetRotuloCreate, DatasetRotuloUpdate](DatasetRotulo)
+# Log imutavel: sem update via API (ver enable_update=False em api/routes/dados.py).
+log_predicoes_ia = CRUDBase[LogPredicaoIA, LogPredicaoIACreate, BaseModel](LogPredicaoIA)
+consentimentos_lgpd = CRUDBase[ConsentimentoLgpd, ConsentimentoLgpdCreate, ConsentimentoLgpdUpdate](
+    ConsentimentoLgpd
+)
+sincronizacao_log = CRUDBase[SincronizacaoLog, SincronizacaoLogCreate, SincronizacaoLogUpdate](
+    SincronizacaoLog
+)
