@@ -56,6 +56,38 @@ agronomo-ia/
 
 Detalhes completos em [docs/01-trilha-a-plataforma/arquitetura-base.md](docs/01-trilha-a-plataforma/arquitetura-base.md).
 
+## Rodando o backend localmente
+
+### Banco de dados
+
+**Opção A — Docker (`infra/docker/docker-compose.yml`)**: requer Docker Desktop com WSL2 habilitado.
+```
+cd infra/docker
+docker compose up -d
+```
+
+**Opção B — PostgreSQL portátil (sem Docker/WSL2)**: usada nesta máquina, já que o WSL2 não está disponível. PostgreSQL 16 + PostGIS 3.6 foram extraídos (zip, sem instalador/serviço) em `C:\Users\User\pgportable`, fora do repositório.
+
+Iniciar o servidor (porta 5433):
+```
+C:\Users\User\pgportable\pgsql\bin\pg_ctl.exe -D C:\Users\User\pgportable\data -l C:\Users\User\pgportable\server.log start
+```
+Parar o servidor:
+```
+C:\Users\User\pgportable\pgsql\bin\pg_ctl.exe -D C:\Users\User\pgportable\data stop
+```
+Usuário `postgres`, senha `agronomo`, banco `agronomo_ia` — já criado e com o `backend/db/schema.sql` aplicado (tabelas + extensões `postgis`/`pgcrypto`).
+
+### API
+
+```
+cd backend
+.venv\Scripts\activate
+copy .env.example .env   # ajustar DATABASE_URL conforme a opção de banco escolhida acima
+uvicorn main:app --reload
+```
+`GET /api/health` deve responder `200 {"status":"ok"}` com o banco no ar.
+
 ## Status
 
-Fase 0 (fundação e governança) e estrutura inicial do repositório. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
+Fase 0 (fundação e governança), estrutura do repositório, schema de banco de dados aplicado e esqueleto do backend FastAPI validados localmente. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
