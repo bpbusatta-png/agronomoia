@@ -78,6 +78,16 @@ C:\Users\User\pgportable\pgsql\bin\pg_ctl.exe -D C:\Users\User\pgportable\data s
 ```
 Usuário `postgres`, senha `agronomo`, banco `agronomo_ia` — já criado e com o `backend/db/schema.sql` aplicado (tabelas + extensões `postgis`/`pgcrypto`).
 
+### Armazenamento de arquivos (fotos)
+
+MinIO (compatível com S3, self-hosted) rodando localmente em `C:\Users\User\minioportable`, mesmo padrão do Postgres portátil (binário único, sem instalador).
+
+Iniciar:
+```
+C:\Users\User\minioportable\minio.exe server C:\Users\User\minioportable\data --address ":9000" --console-address ":9001"
+```
+Credenciais padrão `minioadmin`/`minioadmin` (aceitável para dev local — trocar via `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` em produção). O backend cria o bucket `agronomo-ia` automaticamente na inicialização (com política de leitura pública, para as URLs retornadas funcionarem direto — em produção com S3/R2 real, usar URLs assinadas).
+
 ### API
 
 ```
@@ -129,6 +139,7 @@ Escaneie o QR code com o Expo Go (Android/iOS) ou pressione `w` para abrir no na
   - `log-predicoes-ia`: imutável (sem `PUT`/`DELETE`), escrita e leitura restritas a `Administrador`/`Agronomo_RT`
   - `consentimentos-lgpd`: dado pessoal sensível — gestão e leitura exclusivas de `Administrador`
   - `sincronizacao-log`: qualquer papel autenticado pode registrar sua própria sincronização (`usuario_id` do token); sem `DELETE`; leitura/ajuste de conflito restritos a `Administrador`/`Agronomo_RT`
+  - `uploads`: `Administrador`, `Agronomo_RT` ou `Tecnico_Campo` (mesmo papel de quem cria fotografias); imagens até 15 MB (`jpeg`/`png`/`webp`/`heic`)
 - Em `inspecoes`, `fotografias`, `dataset-rotulos` e `sincronizacao-log`, o campo que identifica "quem fez" (`usuario_id`/`rotulado_por`) é preenchido a partir do usuário autenticado (token), nunca aceito do cliente.
 - **Gate humano obrigatório (plantas atípicas)**: toda ocorrência nasce `status='pendente_validacao'` com `validado_por=NULL` — nem o `POST` nem o `PUT` de `/plantas-atipicas` aceitam esses dois campos do cliente. Só `POST /plantas-atipicas/{id}/validar` (restrito a `Administrador`/`Agronomo_RT`) define `validado_por`/`status`/`recomendacao`, e registra a decisão em `validacoes_humanas` (auditável via `GET /validacoes-humanas`, também restrito a `Administrador`/`Agronomo_RT`).
 - **Logging de auditoria**: toda operação de escrita emite um log JSON estruturado em stdout (`usuario_id`, `usuario_email`, `entidade`, `entidade_id`, `operacao`, `timestamp`) — ver `core/logging.py`.
@@ -136,4 +147,4 @@ Escaneie o QR code com o Expo Go (Android/iOS) ou pressione `w` para abrir no na
 
 ## Status
 
-Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Dashboard web (React + TypeScript + Tailwind) com login e CRUD completo de todas as trilhas — núcleo organizacional, monitoramento de campo e inteligência especializada (incluindo o fluxo de validação humana obrigatória de plantas atípicas) — validado no navegador. App de campo (React Native + Expo) com login, lista de talhões (somente leitura, cache local) e cadastro offline-first de inspeções (fila de sincronização com reenvio automático contra `sincronizacao_log`), validado via Expo web. Próximos passos: fotografias no app mobile (depende de upload de arquivo, ainda não implementado no backend), ou revisão/ajustes do que já existe. Contexto geral em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
+Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Upload de arquivos (fotos) via MinIO local (S3-compatível). Dashboard web (React + TypeScript + Tailwind) com login e CRUD completo de todas as trilhas — núcleo organizacional, monitoramento de campo e inteligência especializada (incluindo o fluxo de validação humana obrigatória de plantas atípicas) — validado no navegador. App de campo (React Native + Expo) com login, lista de talhões (somente leitura, cache local) e cadastro offline-first de inspeções e fotografias (fila de sincronização com upload + reenvio automático contra `sincronizacao_log`), validado via Expo web. Próximos passos: telas de inteligência especializada e monitoramento no app mobile (hoje só inspeções/fotos), ou revisão/ajustes do que já existe. Contexto geral em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).

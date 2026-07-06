@@ -14,5 +14,11 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
 
+    storage_endpoint_url: str = "http://localhost:9000"
+    storage_access_key: str = "minioadmin"
+    storage_secret_key: str = "minioadmin"
+    storage_bucket: str = "agronomo-ia"
+    storage_public_url: str = "http://localhost:9000/agronomo-ia"
+
 
 settings = Settings()

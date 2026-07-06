@@ -23,7 +23,14 @@
     },
     "plugins": [
       "expo-secure-store",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite escolher fotos da lavoura para anexar às inspeções.",
+          "cameraPermission": "Permite tirar fotos da lavoura para anexar às inspeções."
+        }
+      ]
     ]
   }
 }

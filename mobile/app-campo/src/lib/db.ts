@@ -9,7 +9,7 @@ export interface TalhaoCache {
   area_ha: string | null
 }
 
-export type InspecaoStatus = 'pendente' | 'sincronizado' | 'erro'
+export type SyncStatus = 'pendente' | 'sincronizado' | 'erro'
 
 export interface InspecaoLocal {
   id: string
@@ -19,7 +19,20 @@ export interface InspecaoLocal {
   estadio_fenologico: string | null
   observacoes: string | null
   criado_em_local: string
-  status: InspecaoStatus
+  status: SyncStatus
+  remote_id: string | null
+  erro_mensagem: string | null
+}
+
+export interface FotografiaLocal {
+  id: string
+  talhao_id: string
+  talhao_codigo: string
+  inspecao_id: string | null
+  tipo: string | null
+  local_uri: string
+  criado_em_local: string
+  status: SyncStatus
   remote_id: string | null
   erro_mensagem: string | null
 }
@@ -55,6 +68,18 @@ async function openSqliteDb() {
       remote_id TEXT,
       erro_mensagem TEXT
     );
+    CREATE TABLE IF NOT EXISTS fotografias_locais (
+      id TEXT PRIMARY KEY,
+      talhao_id TEXT,
+      talhao_codigo TEXT,
+      inspecao_id TEXT,
+      tipo TEXT,
+      local_uri TEXT,
+      criado_em_local TEXT,
+      status TEXT,
+      remote_id TEXT,
+      erro_mensagem TEXT
+    );
   `)
   return db
 }
@@ -66,6 +91,7 @@ function getSqliteDb() {
 
 const WEB_TALHOES_KEY = 'agronomo_ia_talhoes_cache'
 const WEB_INSPECOES_KEY = 'agronomo_ia_inspecoes_locais'
+const WEB_FOTOGRAFIAS_KEY = 'agronomo_ia_fotografias_locais'
 
 // --- Talhoes (cache somente-leitura, sobrescrito a cada sincronizacao) ---
 
@@ -167,7 +193,7 @@ export async function listInspecoesLocais(): Promise<InspecaoLocal[]> {
 
 export async function updateInspecaoLocalStatus(
   id: string,
-  status: InspecaoStatus,
+  status: SyncStatus,
   remoteId?: string,
   erroMensagem?: string,
 ): Promise<void> {
@@ -181,6 +207,96 @@ export async function updateInspecaoLocalStatus(
   }
   const db = await getSqliteDb()
   await db.runAsync(`UPDATE inspecoes_locais SET status = ?, remote_id = ?, erro_mensagem = ? WHERE id = ?`, [
+    status,
+    remoteId ?? null,
+    erroMensagem ?? null,
+    id,
+  ])
+}
+
+// --- Fotografias locais (mesmo padrao das inspecoes, + arquivo local) ---
+
+async function readWebFotografias(): Promise<FotografiaLocal[]> {
+  if (typeof window === 'undefined') return []
+  const stored = window.localStorage.getItem(WEB_FOTOGRAFIAS_KEY)
+  return stored ? JSON.parse(stored) : []
+}
+
+async function writeWebFotografias(items: FotografiaLocal[]): Promise<void> {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(WEB_FOTOGRAFIAS_KEY, JSON.stringify(items))
+  }
+}
+
+export async function addFotografiaLocal(input: {
+  talhao_id: string
+  talhao_codigo: string
+  inspecao_id: string | null
+  tipo: string | null
+  local_uri: string
+}): Promise<FotografiaLocal> {
+  const item: FotografiaLocal = {
+    id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    ...input,
+    criado_em_local: new Date().toISOString(),
+    status: 'pendente',
+    remote_id: null,
+    erro_mensagem: null,
+  }
+
+  if (Platform.OS === 'web') {
+    const items = await readWebFotografias()
+    items.unshift(item)
+    await writeWebFotografias(items)
+    return item
+  }
+
+  const db = await getSqliteDb()
+  await db.runAsync(
+    `INSERT INTO fotografias_locais
+       (id, talhao_id, talhao_codigo, inspecao_id, tipo, local_uri, criado_em_local, status, remote_id, erro_mensagem)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      item.id,
+      item.talhao_id,
+      item.talhao_codigo,
+      item.inspecao_id,
+      item.tipo,
+      item.local_uri,
+      item.criado_em_local,
+      item.status,
+      item.remote_id,
+      item.erro_mensagem,
+    ],
+  )
+  return item
+}
+
+export async function listFotografiasLocais(): Promise<FotografiaLocal[]> {
+  if (Platform.OS === 'web') {
+    const items = await readWebFotografias()
+    return items.sort((a, b) => b.criado_em_local.localeCompare(a.criado_em_local))
+  }
+  const db = await getSqliteDb()
+  return db.getAllAsync<FotografiaLocal>('SELECT * FROM fotografias_locais ORDER BY criado_em_local DESC')
+}
+
+export async function updateFotografiaLocalStatus(
+  id: string,
+  status: SyncStatus,
+  remoteId?: string,
+  erroMensagem?: string,
+): Promise<void> {
+  if (Platform.OS === 'web') {
+    const items = await readWebFotografias()
+    const updated = items.map((i) =>
+      i.id === id ? { ...i, status, remote_id: remoteId ?? i.remote_id, erro_mensagem: erroMensagem ?? null } : i,
+    )
+    await writeWebFotografias(updated)
+    return
+  }
+  const db = await getSqliteDb()
+  await db.runAsync(`UPDATE fotografias_locais SET status = ?, remote_id = ?, erro_mensagem = ? WHERE id = ?`, [
     status,
     remoteId ?? null,
     erroMensagem ?? null,

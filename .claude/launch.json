@@ -18,6 +18,12 @@
       "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
       "runtimeArgs": ["mobile/app-campo/node_modules/expo/bin/cli", "start", "mobile/app-campo", "--web", "--localhost"],
       "port": 8081
+    },
+    {
+      "name": "minio",
+      "runtimeExecutable": "C:\\Users\\User\\minioportable\\minio.exe",
+      "runtimeArgs": ["server", "C:\\Users\\User\\minioportable\\data", "--address", ":9000", "--console-address", ":9001"],
+      "port": 9000
     }
   ]
 }

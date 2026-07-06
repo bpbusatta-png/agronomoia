@@ -2,11 +2,12 @@ import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 import { AuthProvider, useAuth } from './src/auth/AuthContext'
+import { FotografiasScreen } from './src/screens/FotografiasScreen'
 import { InspecoesScreen } from './src/screens/InspecoesScreen'
 import { LoginScreen } from './src/screens/LoginScreen'
 import { TalhoesScreen } from './src/screens/TalhoesScreen'
 
-type Tab = 'talhoes' | 'inspecoes'
+type Tab = 'talhoes' | 'inspecoes' | 'fotografias'
 
 function Root() {
   const { isAuthenticated, loading } = useAuth()
@@ -24,13 +25,20 @@ function Root() {
 
   return (
     <View style={styles.flex}>
-      <View style={styles.flex}>{tab === 'talhoes' ? <TalhoesScreen /> : <InspecoesScreen />}</View>
+      <View style={styles.flex}>
+        {tab === 'talhoes' && <TalhoesScreen />}
+        {tab === 'inspecoes' && <InspecoesScreen />}
+        {tab === 'fotografias' && <FotografiasScreen />}
+      </View>
       <View style={styles.tabBar}>
         <Pressable style={styles.tabItem} onPress={() => setTab('talhoes')} testID="tab-talhoes">
           <Text style={tab === 'talhoes' ? styles.tabTextActive : styles.tabText}>Talhões</Text>
         </Pressable>
         <Pressable style={styles.tabItem} onPress={() => setTab('inspecoes')} testID="tab-inspecoes">
           <Text style={tab === 'inspecoes' ? styles.tabTextActive : styles.tabText}>Inspeções</Text>
+        </Pressable>
+        <Pressable style={styles.tabItem} onPress={() => setTab('fotografias')} testID="tab-fotografias">
+          <Text style={tab === 'fotografias' ? styles.tabTextActive : styles.tabText}>Fotos</Text>
         </Pressable>
       </View>
     </View>
