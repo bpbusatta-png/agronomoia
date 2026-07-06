@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from sqlalchemy.orm import relationship
 
 from core.database import Base
 
@@ -16,3 +17,5 @@ class Usuario(Base):
     papel_id = Column(PGUUID(as_uuid=True), ForeignKey("papeis.id"))
     ativo = Column(Boolean, default=True)
     criado_em = Column(DateTime, server_default=func.now())
+
+    papel = relationship("Papel")

@@ -88,6 +88,22 @@ uvicorn main:app --reload
 ```
 `GET /api/health` deve responder `200 {"status":"ok"}` com o banco no ar.
 
+### Primeiro acesso (seed)
+
+Como a criação de usuários exige um Administrador autenticado, rode uma vez em um banco novo:
+```
+cd backend
+.venv\Scripts\python scripts\seed_admin.py
+```
+Cria os 5 papéis (`Administrador`, `Agronomo_RT`, `Tecnico_Campo`, `Cooperado`, `Consulta`) e o usuário `admin@agronomo.ia` / `troque-esta-senha` (troque a senha em produção).
+
+## Autenticação e permissões
+
+- **JWT**: `POST /api/auth/login` (form `username`/`password`, padrão OAuth2) retorna `access_token` (30 min) + `refresh_token` (7 dias). `POST /api/auth/refresh` renova o par a partir do refresh token.
+- **RBAC**: todo endpoint exige autenticação (`Authorization: Bearer <token>`). Leitura (`GET`) é liberada a qualquer papel autenticado; escrita (`POST`/`PUT`/`DELETE`) em `papeis`/`usuarios` exige `Administrador`; nas demais entidades do núcleo organizacional, exige `Administrador` ou `Agronomo_RT`.
+- **Logging de auditoria**: toda operação de escrita emite um log JSON estruturado em stdout (`usuario_id`, `usuario_email`, `entidade`, `entidade_id`, `operacao`, `timestamp`) — ver `core/logging.py`.
+- `SECRET_KEY` é obrigatória no `.env` (gerar com `python -c "import secrets; print(secrets.token_hex(32))"`).
+
 ## Status
 
-Fase 0 (fundação e governança), estrutura do repositório, schema de banco de dados aplicado e esqueleto do backend FastAPI validados localmente. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
+Fase 0 (fundação e governança), estrutura do repositório, schema de banco de dados aplicado, CRUD do núcleo organizacional e autenticação/RBAC/logging validados localmente. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).

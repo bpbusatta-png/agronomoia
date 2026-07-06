@@ -1,5 +1,6 @@
 import crud
 from api.routes.factory import crud_router
+from core.deps import require_roles
 from schemas.contrato import ContratoCreate, ContratoRead, ContratoUpdate
 from schemas.cooperado import CooperadoCreate, CooperadoRead, CooperadoUpdate
 from schemas.cultivar import CultivarCreate, CultivarRead, CultivarUpdate
@@ -10,6 +11,15 @@ from schemas.safra import SafraCreate, SafraRead, SafraUpdate
 from schemas.talhao import TalhaoCreate, TalhaoRead, TalhaoUpdate
 from schemas.usuario import UsuarioCreate, UsuarioRead, UsuarioUpdate
 
+ADMINISTRADOR = "Administrador"
+AGRONOMO_RT = "Agronomo_RT"
+
+# Gestao de usuarios/papeis: somente Administrador.
+# Demais entidades do nucleo organizacional: Administrador ou RT podem escrever;
+# qualquer usuario autenticado (qualquer papel) pode ler.
+admin_only = require_roles(ADMINISTRADOR)
+admin_ou_rt = require_roles(ADMINISTRADOR, AGRONOMO_RT)
+
 routers = [
     crud_router(
         crud=crud.papeis,
@@ -18,6 +28,7 @@ routers = [
         update_schema=PapelUpdate,
         prefix="/papeis",
         tag="papeis",
+        write_dep=admin_only,
     ),
     crud_router(
         crud=crud.usuarios,
@@ -26,6 +37,7 @@ routers = [
         update_schema=UsuarioUpdate,
         prefix="/usuarios",
         tag="usuarios",
+        write_dep=admin_only,
     ),
     crud_router(
         crud=crud.cooperados,
@@ -34,6 +46,7 @@ routers = [
         update_schema=CooperadoUpdate,
         prefix="/cooperados",
         tag="cooperados",
+        write_dep=admin_ou_rt,
     ),
     crud_router(
         crud=crud.empresas,
@@ -42,6 +55,7 @@ routers = [
         update_schema=EmpresaUpdate,
         prefix="/empresas",
         tag="empresas",
+        write_dep=admin_ou_rt,
     ),
     crud_router(
         crud=crud.fazendas,
@@ -50,6 +64,7 @@ routers = [
         update_schema=FazendaUpdate,
         prefix="/fazendas",
         tag="fazendas",
+        write_dep=admin_ou_rt,
     ),
     crud_router(
         crud=crud.safras,
@@ -58,6 +73,7 @@ routers = [
         update_schema=SafraUpdate,
         prefix="/safras",
         tag="safras",
+        write_dep=admin_ou_rt,
     ),
     crud_router(
         crud=crud.cultivares,
@@ -66,6 +82,7 @@ routers = [
         update_schema=CultivarUpdate,
         prefix="/cultivares",
         tag="cultivares",
+        write_dep=admin_ou_rt,
     ),
     crud_router(
         crud=crud.talhoes,
@@ -74,6 +91,7 @@ routers = [
         update_schema=TalhaoUpdate,
         prefix="/talhoes",
         tag="talhoes",
+        write_dep=admin_ou_rt,
     ),
     crud_router(
         crud=crud.contratos,
@@ -82,5 +100,6 @@ routers = [
         update_schema=ContratoUpdate,
         prefix="/contratos",
         tag="contratos",
+        write_dep=admin_ou_rt,
     ),
 ]
