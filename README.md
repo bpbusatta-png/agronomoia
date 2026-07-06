@@ -97,6 +97,16 @@ cd backend
 ```
 Cria os 5 papéis (`Administrador`, `Agronomo_RT`, `Tecnico_Campo`, `Cooperado`, `Consulta`) e o usuário `admin@agronomo.ia` / `troque-esta-senha` (troque a senha em produção).
 
+### Dashboard (frontend)
+
+```
+cd frontend/dashboard
+npm install
+cp .env.example .env
+npm run dev
+```
+Acesse http://localhost:5173 — login com o usuário criado pelo seed. Detalhes em [frontend/dashboard/README.md](frontend/dashboard/README.md).
+
 ## Autenticação e permissões
 
 - **JWT**: `POST /api/auth/login` (form `username`/`password`, padrão OAuth2) retorna `access_token` (30 min) + `refresh_token` (7 dias). `POST /api/auth/refresh` renova o par a partir do refresh token.
@@ -116,4 +126,4 @@ Cria os 5 papéis (`Administrador`, `Agronomo_RT`, `Tecnico_Campo`, `Cooperado`,
 
 ## Status
 
-Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md) — provavelmente frontend (dashboard) ou app mobile de campo, já que o backend cobre o schema inteiro.
+Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Dashboard web (React + TypeScript + Tailwind) com login e CRUD do núcleo organizacional (empresas, cooperados, fazendas, safras, cultivares, talhões, contratos) validado no navegador. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md) — provavelmente telas para monitoramento/inteligência especializada, ou o app mobile de campo.
