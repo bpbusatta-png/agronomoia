@@ -3,5 +3,9 @@ uvicorn[standard]==0.32.0
 sqlalchemy==2.0.35
 psycopg2-binary==2.9.9
 geoalchemy2==0.15.2
+shapely==2.0.6
 pydantic-settings==2.5.2
 python-dotenv==1.0.1
+email-validator==2.2.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
