@@ -7,6 +7,11 @@ from models.safra import Safra
 from models.cultivar import Cultivar
 from models.talhao import Talhao
 from models.contrato import Contrato
+from models.inspecao import Inspecao
+from models.aplicacao import Aplicacao
+from models.historico_climatico import HistoricoClimatico
+from models.analise_solo import AnaliseSolo
+from models.fotografia import Fotografia
 
 __all__ = [
     "Papel",
@@ -18,4 +23,9 @@ __all__ = [
     "Cultivar",
     "Talhao",
     "Contrato",
+    "Inspecao",
+    "Aplicacao",
+    "HistoricoClimatico",
+    "AnaliseSolo",
+    "Fotografia",
 ]

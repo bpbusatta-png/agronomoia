@@ -5,12 +5,32 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from core.security import hash_password
-from models import Contrato, Cooperado, Cultivar, Empresa, Fazenda, Papel, Safra, Talhao, Usuario
+from models import (
+    AnaliseSolo,
+    Aplicacao,
+    Contrato,
+    Cooperado,
+    Cultivar,
+    Empresa,
+    Fazenda,
+    Fotografia,
+    HistoricoClimatico,
+    Inspecao,
+    Papel,
+    Safra,
+    Talhao,
+    Usuario,
+)
+from schemas.analise_solo import AnaliseSoloCreate, AnaliseSoloUpdate
+from schemas.aplicacao import AplicacaoCreate, AplicacaoUpdate
 from schemas.contrato import ContratoCreate, ContratoUpdate
 from schemas.cooperado import CooperadoCreate, CooperadoUpdate
 from schemas.cultivar import CultivarCreate, CultivarUpdate
 from schemas.empresa import EmpresaCreate, EmpresaUpdate
 from schemas.fazenda import FazendaCreate, FazendaUpdate
+from schemas.fotografia import FotografiaCreate, FotografiaUpdate
+from schemas.historico_climatico import HistoricoClimaticoCreate, HistoricoClimaticoUpdate
+from schemas.inspecao import InspecaoCreate, InspecaoUpdate
 from schemas.papel import PapelCreate, PapelUpdate
 from schemas.safra import SafraCreate, SafraUpdate
 from schemas.talhao import TalhaoCreate, TalhaoUpdate
@@ -31,8 +51,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def list(self, db: Session, skip: int = 0, limit: int = 100) -> List[ModelType]:
         return db.query(self.model).offset(skip).limit(limit).all()
 
-    def create(self, db: Session, obj_in: CreateSchemaType) -> ModelType:
-        obj = self.model(**obj_in.model_dump())
+    def create(self, db: Session, obj_in: CreateSchemaType, **extra_fields) -> ModelType:
+        data = obj_in.model_dump()
+        data.update(extra_fields)
+        obj = self.model(**data)
         db.add(obj)
         db.commit()
         db.refresh(obj)
@@ -85,3 +107,11 @@ safras = CRUDBase[Safra, SafraCreate, SafraUpdate](Safra)
 cultivares = CRUDBase[Cultivar, CultivarCreate, CultivarUpdate](Cultivar)
 talhoes = CRUDBase[Talhao, TalhaoCreate, TalhaoUpdate](Talhao)
 contratos = CRUDBase[Contrato, ContratoCreate, ContratoUpdate](Contrato)
+
+inspecoes = CRUDBase[Inspecao, InspecaoCreate, InspecaoUpdate](Inspecao)
+aplicacoes = CRUDBase[Aplicacao, AplicacaoCreate, AplicacaoUpdate](Aplicacao)
+historico_climatico = CRUDBase[HistoricoClimatico, HistoricoClimaticoCreate, HistoricoClimaticoUpdate](
+    HistoricoClimatico
+)
+analises_solo = CRUDBase[AnaliseSolo, AnaliseSoloCreate, AnaliseSoloUpdate](AnaliseSolo)
+fotografias = CRUDBase[Fotografia, FotografiaCreate, FotografiaUpdate](Fotografia)

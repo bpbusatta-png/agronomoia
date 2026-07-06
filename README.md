@@ -100,10 +100,14 @@ Cria os 5 papéis (`Administrador`, `Agronomo_RT`, `Tecnico_Campo`, `Cooperado`,
 ## Autenticação e permissões
 
 - **JWT**: `POST /api/auth/login` (form `username`/`password`, padrão OAuth2) retorna `access_token` (30 min) + `refresh_token` (7 dias). `POST /api/auth/refresh` renova o par a partir do refresh token.
-- **RBAC**: todo endpoint exige autenticação (`Authorization: Bearer <token>`). Leitura (`GET`) é liberada a qualquer papel autenticado; escrita (`POST`/`PUT`/`DELETE`) em `papeis`/`usuarios` exige `Administrador`; nas demais entidades do núcleo organizacional, exige `Administrador` ou `Agronomo_RT`.
+- **RBAC**: todo endpoint exige autenticação (`Authorization: Bearer <token>`). Leitura (`GET`) é liberada a qualquer papel autenticado. Escrita (`POST`/`PUT`/`DELETE`):
+  - `papeis`/`usuarios`: `Administrador`
+  - `cooperados`/`empresas`/`fazendas`/`safras`/`cultivares`/`talhoes`/`contratos`/`historico-climatico`: `Administrador` ou `Agronomo_RT`
+  - `inspecoes`/`aplicacoes`/`analises-solo`/`fotografias`: `Administrador`, `Agronomo_RT` ou `Tecnico_Campo`
+- Em `inspecoes` e `fotografias`, o `usuario_id` é preenchido a partir do usuário autenticado (token), nunca aceito do cliente.
 - **Logging de auditoria**: toda operação de escrita emite um log JSON estruturado em stdout (`usuario_id`, `usuario_email`, `entidade`, `entidade_id`, `operacao`, `timestamp`) — ver `core/logging.py`.
 - `SECRET_KEY` é obrigatória no `.env` (gerar com `python -c "import secrets; print(secrets.token_hex(32))"`).
 
 ## Status
 
-Fase 0 (fundação e governança), estrutura do repositório, schema de banco de dados aplicado, CRUD do núcleo organizacional e autenticação/RBAC/logging validados localmente. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
+Fase 0 (fundação e governança), estrutura do repositório, schema de banco de dados aplicado, autenticação/RBAC/logging, CRUD do núcleo organizacional (Trilha A) e das tabelas de monitoramento de campo (Trilha B: inspeções, aplicações, histórico climático, análises de solo, fotografias) validados localmente. Próximos passos em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).

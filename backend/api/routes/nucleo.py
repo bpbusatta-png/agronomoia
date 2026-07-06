@@ -1,6 +1,6 @@
 import crud
 from api.routes.factory import crud_router
-from core.deps import require_roles
+from core.roles import admin_only, admin_ou_rt
 from schemas.contrato import ContratoCreate, ContratoRead, ContratoUpdate
 from schemas.cooperado import CooperadoCreate, CooperadoRead, CooperadoUpdate
 from schemas.cultivar import CultivarCreate, CultivarRead, CultivarUpdate
@@ -10,15 +10,6 @@ from schemas.papel import PapelCreate, PapelRead, PapelUpdate
 from schemas.safra import SafraCreate, SafraRead, SafraUpdate
 from schemas.talhao import TalhaoCreate, TalhaoRead, TalhaoUpdate
 from schemas.usuario import UsuarioCreate, UsuarioRead, UsuarioUpdate
-
-ADMINISTRADOR = "Administrador"
-AGRONOMO_RT = "Agronomo_RT"
-
-# Gestao de usuarios/papeis: somente Administrador.
-# Demais entidades do nucleo organizacional: Administrador ou RT podem escrever;
-# qualquer usuario autenticado (qualquer papel) pode ler.
-admin_only = require_roles(ADMINISTRADOR)
-admin_ou_rt = require_roles(ADMINISTRADOR, AGRONOMO_RT)
 
 routers = [
     crud_router(

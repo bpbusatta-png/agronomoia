@@ -21,6 +21,7 @@ def crud_router(
     tag: str,
     read_dep: Callable = get_current_user,
     write_dep: Optional[Callable] = None,
+    inject_usuario_field: Optional[str] = None,
 ) -> APIRouter:
     write_dep = write_dep or read_dep
     router = APIRouter(prefix=prefix, tags=[tag])
@@ -38,7 +39,8 @@ def crud_router(
 
     @router.post("", response_model=read_schema, status_code=201)
     def create_(obj_in: create_schema, db: Session = Depends(get_db), current_user=Depends(write_dep)):
-        obj = crud.create(db, obj_in)
+        extra = {inject_usuario_field: current_user.id} if inject_usuario_field else {}
+        obj = crud.create(db, obj_in, **extra)
         log_operacao(current_user, tag, "criar", obj.id)
         return obj
 
