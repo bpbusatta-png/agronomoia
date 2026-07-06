@@ -138,6 +138,119 @@ export const contratosConfig: EntityConfig = {
   refs: ['empresas', 'cultivares', 'cooperados', 'safras'],
 }
 
+export const inspecoesConfig: EntityConfig = {
+  key: 'inspecoes',
+  title: 'Inspeções',
+  endpoint: '/inspecoes',
+  fields: [
+    { name: 'talhao_id', label: 'Talhão', type: 'select', required: true, optionsFrom: 'talhoes' },
+    { name: 'data', label: 'Data', type: 'date', required: true },
+    { name: 'estadio_fenologico', label: 'Estádio fenológico', type: 'text' },
+    { name: 'observacoes', label: 'Observações', type: 'text' },
+  ],
+  columns: [
+    { name: 'talhao_id', label: 'Talhão' },
+    { name: 'data', label: 'Data' },
+    { name: 'estadio_fenologico', label: 'Estádio' },
+    { name: 'observacoes', label: 'Observações' },
+  ],
+  refs: ['talhoes'],
+}
+
+export const aplicacoesConfig: EntityConfig = {
+  key: 'aplicacoes',
+  title: 'Aplicações',
+  endpoint: '/aplicacoes',
+  fields: [
+    { name: 'talhao_id', label: 'Talhão', type: 'select', required: true, optionsFrom: 'talhoes' },
+    { name: 'produto', label: 'Produto', type: 'text' },
+    { name: 'ingrediente_ativo', label: 'Ingrediente ativo', type: 'text' },
+    { name: 'dose', label: 'Dose', type: 'number' },
+    { name: 'data', label: 'Data', type: 'date' },
+    { name: 'volume_calda_l_ha', label: 'Volume de calda (L/ha)', type: 'number' },
+    { name: 'tecnologia_aplicacao', label: 'Tecnologia de aplicação', type: 'text' },
+  ],
+  columns: [
+    { name: 'talhao_id', label: 'Talhão' },
+    { name: 'produto', label: 'Produto' },
+    { name: 'dose', label: 'Dose' },
+    { name: 'data', label: 'Data' },
+  ],
+  refs: ['talhoes'],
+}
+
+export const historicoClimaticoConfig: EntityConfig = {
+  key: 'historico_climatico',
+  title: 'Histórico Climático',
+  endpoint: '/historico-climatico',
+  fields: [
+    { name: 'talhao_id', label: 'Talhão', type: 'select', required: true, optionsFrom: 'talhoes' },
+    { name: 'data', label: 'Data', type: 'date', required: true },
+    { name: 'chuva_mm', label: 'Chuva (mm)', type: 'number' },
+    { name: 'temp_min', label: 'Temp. mínima (°C)', type: 'number' },
+    { name: 'temp_max', label: 'Temp. máxima (°C)', type: 'number' },
+    { name: 'umidade_relativa', label: 'Umidade relativa (%)', type: 'number' },
+  ],
+  columns: [
+    { name: 'talhao_id', label: 'Talhão' },
+    { name: 'data', label: 'Data' },
+    { name: 'chuva_mm', label: 'Chuva (mm)' },
+    { name: 'temp_min', label: 'Temp. mín (°C)' },
+    { name: 'temp_max', label: 'Temp. máx (°C)' },
+  ],
+  refs: ['talhoes'],
+}
+
+export const analisesSoloConfig: EntityConfig = {
+  key: 'analises_solo',
+  title: 'Análises de Solo',
+  endpoint: '/analises-solo',
+  fields: [
+    { name: 'talhao_id', label: 'Talhão', type: 'select', required: true, optionsFrom: 'talhoes' },
+    { name: 'data', label: 'Data', type: 'date' },
+    { name: 'ph', label: 'pH', type: 'number' },
+    { name: 'materia_organica', label: 'Matéria orgânica (%)', type: 'number' },
+    { name: 'nutrientes', label: 'Nutrientes (JSON, ex: {"P": 12.4, "K": 0.3})', type: 'json' },
+  ],
+  columns: [
+    { name: 'talhao_id', label: 'Talhão' },
+    { name: 'data', label: 'Data' },
+    { name: 'ph', label: 'pH' },
+    { name: 'nutrientes', label: 'Nutrientes' },
+  ],
+  refs: ['talhoes'],
+}
+
+export const fotografiasConfig: EntityConfig = {
+  key: 'fotografias',
+  title: 'Fotografias',
+  endpoint: '/fotografias',
+  fields: [
+    { name: 'talhao_id', label: 'Talhão', type: 'select', required: true, optionsFrom: 'talhoes' },
+    { name: 'inspecao_id', label: 'Inspeção (opcional)', type: 'select', optionsFrom: 'inspecoes' },
+    { name: 'url_arquivo', label: 'URL do arquivo', type: 'text', required: true },
+    {
+      name: 'tipo',
+      label: 'Tipo',
+      type: 'select',
+      staticOptions: [
+        { value: 'praga', label: 'Praga' },
+        { value: 'doenca', label: 'Doença' },
+        { value: 'planta_atipica', label: 'Planta atípica' },
+        { value: 'geral', label: 'Geral' },
+      ],
+    },
+    { name: 'localizacao', label: 'Localização (WKT, ex: POINT(-52.4 -28.26))', type: 'text' },
+  ],
+  columns: [
+    { name: 'talhao_id', label: 'Talhão' },
+    { name: 'tipo', label: 'Tipo' },
+    { name: 'url_arquivo', label: 'URL' },
+    { name: 'capturado_em', label: 'Capturado em' },
+  ],
+  refs: ['talhoes', 'inspecoes'],
+}
+
 export const allConfigs: Record<string, EntityConfig> = {
   empresas: empresasConfig,
   cooperados: cooperadosConfig,
@@ -146,4 +259,9 @@ export const allConfigs: Record<string, EntityConfig> = {
   cultivares: cultivaresConfig,
   talhoes: talhoesConfig,
   contratos: contratosConfig,
+  inspecoes: inspecoesConfig,
+  aplicacoes: aplicacoesConfig,
+  historico_climatico: historicoClimaticoConfig,
+  analises_solo: analisesSoloConfig,
+  fotografias: fotografiasConfig,
 }

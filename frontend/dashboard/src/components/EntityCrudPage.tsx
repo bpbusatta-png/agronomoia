@@ -66,7 +66,13 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
     const values: Record<string, string> = {}
     config.fields.forEach((f) => {
       const value = item[f.name]
-      values[f.name] = value === null || value === undefined ? '' : String(value)
+      if (value === null || value === undefined) {
+        values[f.name] = ''
+      } else if (f.type === 'json') {
+        values[f.name] = JSON.stringify(value)
+      } else {
+        values[f.name] = String(value)
+      }
     })
     setFormValues(values)
     setShowForm(true)
@@ -84,6 +90,18 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+
+    for (const f of config.fields) {
+      if (f.type === 'json' && formValues[f.name]) {
+        try {
+          JSON.parse(formValues[f.name])
+        } catch {
+          alert(`Campo "${f.label}" precisa ser um JSON válido, ex: {"P": 12.4, "K": 0.3}`)
+          return
+        }
+      }
+    }
+
     setSaving(true)
     try {
       const payload: Record<string, unknown> = {}
@@ -93,7 +111,13 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
           payload[f.name] = null
           return
         }
-        payload[f.name] = f.type === 'number' ? Number(raw) : raw
+        if (f.type === 'number') {
+          payload[f.name] = Number(raw)
+        } else if (f.type === 'json') {
+          payload[f.name] = JSON.parse(raw)
+        } else {
+          payload[f.name] = raw
+        }
       })
       if (editing) {
         await api.put(`${config.endpoint}/${editing.id}`, payload)
@@ -114,12 +138,13 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
   function displayValue(item: Row, columnName: string) {
     const value = item[columnName]
     if (value === null || value === undefined || value === '') return '—'
-    const field = config.fields.find((f) => f.name === columnName && f.optionsFrom)
-    if (field?.optionsFrom) {
-      const options = refOptions[field.optionsFrom] ?? []
+    const field = config.fields.find((f) => f.name === columnName)
+    if (field?.optionsFrom || field?.staticOptions) {
+      const options = field.staticOptions ?? refOptions[field.optionsFrom ?? ''] ?? []
       const match = options.find((o) => o.value === value)
       if (match) return match.label
     }
+    if (typeof value === 'object') return JSON.stringify(value)
     return String(value)
   }
 
@@ -196,12 +221,20 @@ export function EntityCrudPage({ config, refConfigs }: Props) {
                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
                   >
                     <option value="">Selecione...</option>
-                    {(refOptions[f.optionsFrom ?? ''] ?? []).map((opt) => (
+                    {(f.staticOptions ?? refOptions[f.optionsFrom ?? ''] ?? []).map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
                       </option>
                     ))}
                   </select>
+                ) : f.type === 'json' ? (
+                  <textarea
+                    value={formValues[f.name] ?? ''}
+                    required={f.required}
+                    rows={3}
+                    onChange={(e) => setFormValues((v) => ({ ...v, [f.name]: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm font-mono"
+                  />
                 ) : (
                   <input
                     type={f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'}

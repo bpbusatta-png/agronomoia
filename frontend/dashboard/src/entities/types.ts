@@ -1,4 +1,4 @@
-export type FieldType = 'text' | 'number' | 'date' | 'select'
+export type FieldType = 'text' | 'number' | 'date' | 'select' | 'json'
 
 export interface SelectOption {
   value: string
@@ -11,6 +11,7 @@ export interface FieldConfig {
   type: FieldType
   required?: boolean
   optionsFrom?: string
+  staticOptions?: SelectOption[]
 }
 
 export interface ColumnConfig {
