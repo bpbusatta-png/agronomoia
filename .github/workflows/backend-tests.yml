@@ -1,0 +1,48 @@
+name: Backend tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agronomo_ia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        working-directory: backend
+        run: pip install -r requirements-dev.txt
+
+      - name: Aplicar schema no banco de testes
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d agronomo_ia_test -f backend/db/schema.sql
+
+      - name: Rodar pytest
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/agronomo_ia_test
+        run: pytest

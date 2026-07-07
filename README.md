@@ -117,6 +117,8 @@ pytest
 ```
 Por padrão os testes usam `agronomo_ia_test` na porta 5433 (mesmo servidor portátil do dev); para apontar para outro banco, defina `TEST_DATABASE_URL` antes de rodar.
 
+**CI**: `.github/workflows/backend-tests.yml` roda essa mesma suíte a cada push/pull request (serviço Postgres com PostGIS via container, schema aplicado com `psql`).
+
 ### Primeiro acesso (seed)
 
 Como a criação de usuários exige um Administrador autenticado, rode uma vez em um banco novo:

@@ -115,7 +115,7 @@ npx expo start --web
 
 - **Mobile**: histórico climático e modelos de IA só existem no dashboard web ainda (dado mais administrativo, sem uso de campo).
 - **Testes automatizados**: backend agora tem suíte pytest (28 testes, `backend/tests/`) cobrindo login/refresh JWT, RBAC do núcleo organizacional, gate de validação humana de plantas atípicas e upload de arquivos (mockado, sem depender do MinIO rodando) — roda contra banco Postgres real separado (`agronomo_ia_test`) com isolamento por rollback de transação. Ver seção "Testes automatizados (backend)" no `README.md`. Frontend (dashboard/mobile) segue sem testes automatizados; validação continua manual (curl + navegador).
-- **CI/CD**: inexistente.
+- **CI/CD**: `.github/workflows/backend-tests.yml` roda a suíte pytest do backend a cada push/PR em `main`/`master` (serviço `postgis/postgis:16-3.4`, schema aplicado via `psql`, mesma suíte de 28 testes) — validado localmente simulando os mesmos passos contra um banco descartável antes de commitar. Ainda não há remote configurado neste repositório, então o workflow só vai rodar de fato quando o repo for publicado no GitHub. Dashboard e mobile seguem sem pipeline de CI (não têm testes automatizados ainda, ver item acima).
 - **Storage em produção**: MinIO local funciona para dev; produção exigiria AWS S3/Cloudflare R2 real com URLs assinadas (hoje o bucket é público para simplificar o MVP local).
 - **Emulador mobile real**: todo o app mobile foi validado via Expo web; testar em um dispositivo/emulador Android ou iOS de verdade ainda não foi feito.
 - **ERP externo** (mencionado pelo usuário): núcleo organizacional hoje só recebe dados via CRUD manual; integração futura com ERP ainda não tem design (ver memória do projeto).
