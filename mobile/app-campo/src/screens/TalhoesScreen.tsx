@@ -26,14 +26,16 @@ export function TalhoesScreen() {
     setRefreshing(true)
     setError(null)
     try {
-      const [talhoesRes, fazendasRes, cultivaresRes, safrasRes, pragasRes, doencasRes] = await Promise.all([
-        api.get<ApiRow[]>('/talhoes'),
-        api.get<ApiRow[]>('/fazendas'),
-        api.get<ApiRow[]>('/cultivares'),
-        api.get<ApiRow[]>('/safras'),
-        api.get<ApiRow[]>('/pragas-catalogo'),
-        api.get<ApiRow[]>('/doencas-catalogo'),
-      ])
+      const [talhoesRes, fazendasRes, cultivaresRes, safrasRes, pragasRes, doencasRes, plantasDaninhasRes] =
+        await Promise.all([
+          api.get<ApiRow[]>('/talhoes'),
+          api.get<ApiRow[]>('/fazendas'),
+          api.get<ApiRow[]>('/cultivares'),
+          api.get<ApiRow[]>('/safras'),
+          api.get<ApiRow[]>('/pragas-catalogo'),
+          api.get<ApiRow[]>('/doencas-catalogo'),
+          api.get<ApiRow[]>('/plantas-daninhas-catalogo'),
+        ])
 
       const fazendaNomes = new Map(fazendasRes.data.map((f) => [f.id, String(f.nome ?? '')]))
       const cultivarNomes = new Map(cultivaresRes.data.map((c) => [c.id, String(c.nome ?? '')]))
@@ -60,6 +62,10 @@ export function TalhoesScreen() {
       await upsertCache<SafraCache>(
         'safras',
         safrasRes.data.map((s) => ({ id: s.id, nome: String(s.nome ?? s.id) })),
+      )
+      await upsertCache(
+        'plantas_daninhas_catalogo',
+        plantasDaninhasRes.data.map((p) => ({ id: p.id, nome_comum: String(p.nome_comum ?? p.id) })),
       )
       setTalhoes(rows)
     } catch {

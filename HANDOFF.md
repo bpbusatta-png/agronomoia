@@ -94,11 +94,12 @@ npx expo start --web
 
 ### App mobile de campo
 
-- Login JWT (mesmo backend), 11 telas: Talhões (leitura), Inspeções, Fotografias, Aplicações, Análises de Solo, Ocorrências de Pragas, Ocorrências de Doenças, Colheita, NDVI, Produtividade, Validação (plantas atípicas).
+- Login JWT (mesmo backend), 14 telas: Talhões (leitura), Reconhecimento IA, Inspeções, Fotografias, Aplicações, Análises de Solo, Ocorrências de Pragas, Ocorrências de Doenças, Ocorrências de Plantas Daninhas, Plantas Atípicas (cadastro), Colheita, NDVI, Produtividade, Validação (plantas atípicas).
 - **Offline-first de verdade**: cada cadastro grava local primeiro (SQLite nativo em iOS/Android; `localStorage` só no modo web, usado apenas para testar sem emulador) e sincroniza quando há conexão, com fila de reenvio automático em caso de falha.
-- Camada genérica reaproveitada por 5 das 7 telas de cadastro: `reference_cache` (catálogos somente-leitura) e `local_queue` (fila offline) em `db.ts`, `syncQueue()` em `sync.ts`, `CachePickerModal.tsx` para seletores.
+- Camada genérica reaproveitada pela maioria das telas de cadastro: `reference_cache` (catálogos somente-leitura) e `local_queue` (fila offline) em `db.ts`, `syncQueue()` em `sync.ts`, `CachePickerModal.tsx` para seletores.
 - **NDVI/Produtividade**: telas somente-leitura (mesmo papel `Tecnico_Campo` não tem permissão de escrita nessas entidades no backend) — buscam do servidor e cacheiam localmente para consulta offline, sem fila de sincronização (não há o que reenviar).
 - **Validação de plantas atípicas**: busca ao vivo a lista de ocorrências `pendente_validacao` e permite decidir manter/eliminar (`POST /plantas-atipicas/{id}/validar`) — sem fila offline (a ação em si exige conexão); visível a todos os papéis, mas o backend rejeita com 403 quem não for Administrador/Agronomo_RT. Mesmo fluxo de decisão do dashboard web (`PlantasAtipicasPage.tsx`).
+- **Reconhecimento IA** (novo): tira/escolhe foto, chama `POST /api/reconhecimento/classificar` (sem fila offline — precisa de conexão com a API de IA) e mostra a sugestão com um botão que pula direto para a aba de cadastro do tipo identificado (`onIrParaTab`, prop vinda de `App.tsx`, que só troca o estado de aba local). Reaproveita `buildFotoFormData()` (exportado de `sync.ts`) para montar o multipart a partir da URI da foto.
 - Testado apenas via **Expo web** — não há emulador Android/iOS nesta máquina. Ver ressalvas abaixo.
 
 ## Decisões e obstáculos técnicos relevantes

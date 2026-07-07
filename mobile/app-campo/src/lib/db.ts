@@ -19,6 +19,11 @@ export interface DoencaCatalogoCache {
   nome: string
 }
 
+export interface PlantaDaninhaCatalogoCache {
+  id: string
+  nome_comum: string
+}
+
 export interface SafraCache {
   id: string
   nome: string

@@ -60,7 +60,7 @@ export async function syncPendingInspecoes(): Promise<SyncResult> {
 // de um Blob (a propria ponte de rede le o arquivo local pelo uri). No modo
 // web (react-native-web), local_uri e uma data:/blob: URI e precisa virar
 // um Blob de verdade via fetch antes de anexar ao FormData.
-async function buildFotoFormData(localUri: string): Promise<FormData> {
+export async function buildFotoFormData(localUri: string): Promise<FormData> {
   const formData = new FormData()
   if (Platform.OS === 'web') {
     const response = await fetch(localUri)
@@ -245,6 +245,50 @@ export function syncPendingOcorrenciasDoencas(): Promise<SyncResult> {
       data: p.data,
     }),
   )
+}
+
+export interface OcorrenciaPlantaDaninhaPayload {
+  talhao_id: string
+  talhao_codigo: string
+  planta_daninha_id: string
+  planta_daninha_nome: string
+  nivel_infestacao: string | null
+  estadio_cultura: string | null
+  data: string | null
+}
+
+export function syncPendingOcorrenciasPlantasDaninhas(): Promise<SyncResult> {
+  return syncQueue<OcorrenciaPlantaDaninhaPayload>(
+    'ocorrencias_plantas_daninhas',
+    'ocorrencias_plantas_daninhas',
+    '/ocorrencias-plantas-daninhas',
+    (p) => ({
+      talhao_id: p.talhao_id,
+      planta_daninha_id: p.planta_daninha_id,
+      nivel_infestacao: p.nivel_infestacao,
+      estadio_cultura: p.estadio_cultura,
+      data: p.data,
+    }),
+  )
+}
+
+export interface PlantaAtipicaPayload {
+  talhao_id: string
+  talhao_codigo: string
+  caracteristica_avaliada: string | null
+  conforme_padrao: boolean | null
+  justificativa_tecnica: string | null
+  data: string | null
+}
+
+export function syncPendingPlantasAtipicas(): Promise<SyncResult> {
+  return syncQueue<PlantaAtipicaPayload>('plantas_atipicas', 'plantas_atipicas_ocorrencias', '/plantas-atipicas', (p) => ({
+    talhao_id: p.talhao_id,
+    caracteristica_avaliada: p.caracteristica_avaliada,
+    conforme_padrao: p.conforme_padrao,
+    justificativa_tecnica: p.justificativa_tecnica,
+    data: p.data,
+  }))
 }
 
 export interface ColheitaPayload {

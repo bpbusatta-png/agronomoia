@@ -10,19 +10,25 @@ import { InspecoesScreen } from './src/screens/InspecoesScreen'
 import { LoginScreen } from './src/screens/LoginScreen'
 import { NdviScreen } from './src/screens/NdviScreen'
 import { OcorrenciasDoencasScreen } from './src/screens/OcorrenciasDoencasScreen'
+import { OcorrenciasPlantasDaninhasScreen } from './src/screens/OcorrenciasPlantasDaninhasScreen'
 import { OcorrenciasPragasScreen } from './src/screens/OcorrenciasPragasScreen'
+import { PlantasAtipicasScreen } from './src/screens/PlantasAtipicasScreen'
 import { PlantasAtipicasValidacaoScreen } from './src/screens/PlantasAtipicasValidacaoScreen'
 import { ProdutividadeScreen } from './src/screens/ProdutividadeScreen'
+import { ReconhecimentoScreen } from './src/screens/ReconhecimentoScreen'
 import { TalhoesScreen } from './src/screens/TalhoesScreen'
 
 const TABS = [
   { key: 'talhoes', label: 'Talhões' },
+  { key: 'reconhecimento', label: 'Reconhecimento IA' },
   { key: 'inspecoes', label: 'Inspeções' },
   { key: 'fotografias', label: 'Fotos' },
   { key: 'aplicacoes', label: 'Aplicações' },
   { key: 'solo', label: 'Solo' },
   { key: 'pragas', label: 'Pragas' },
   { key: 'doencas', label: 'Doenças' },
+  { key: 'plantas_daninhas', label: 'Plantas Daninhas' },
+  { key: 'atipicas', label: 'Plantas Atípicas' },
   { key: 'colheita', label: 'Colheita' },
   { key: 'ndvi', label: 'NDVI' },
   { key: 'produtividade', label: 'Produtividade' },
@@ -49,12 +55,15 @@ function Root() {
     <View style={styles.flex}>
       <View style={styles.flex}>
         {tab === 'talhoes' && <TalhoesScreen />}
+        {tab === 'reconhecimento' && <ReconhecimentoScreen onIrParaTab={(t) => setTab(t as Tab)} />}
         {tab === 'inspecoes' && <InspecoesScreen />}
         {tab === 'fotografias' && <FotografiasScreen />}
         {tab === 'aplicacoes' && <AplicacoesScreen />}
         {tab === 'solo' && <AnalisesSoloScreen />}
         {tab === 'pragas' && <OcorrenciasPragasScreen />}
         {tab === 'doencas' && <OcorrenciasDoencasScreen />}
+        {tab === 'plantas_daninhas' && <OcorrenciasPlantasDaninhasScreen />}
+        {tab === 'atipicas' && <PlantasAtipicasScreen />}
         {tab === 'colheita' && <ColheitaScreen />}
         {tab === 'ndvi' && <NdviScreen />}
         {tab === 'produtividade' && <ProdutividadeScreen />}
