@@ -136,4 +136,6 @@ ce879ba Adiciona app mobile de campo (React Native + Expo)
 ab155c2 Adiciona cadastro offline de inspecoes com fila de sincronizacao
 994bc47 Adiciona upload de arquivos (MinIO) e fotografias offline no mobile
 a9321a5 Adiciona aplicacoes, analises de solo e ocorrencias de pragas/doencas ao mobile
+96570af Adiciona documento de handoff da sessao
+3d939eb Adiciona upload de foto real ao formulario de Fotografias do dashboard
 ```
