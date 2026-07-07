@@ -4,7 +4,7 @@
     {
       "name": "backend-api",
       "runtimeExecutable": "backend/.venv/Scripts/uvicorn.exe",
-      "runtimeArgs": ["main:app", "--reload", "--app-dir", "backend", "--port", "8000"],
+      "runtimeArgs": ["main:app", "--reload", "--app-dir", "backend", "--host", "0.0.0.0", "--port", "8000"],
       "port": 8000
     },
     {
@@ -17,6 +17,12 @@
       "name": "mobile-app-campo",
       "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
       "runtimeArgs": ["mobile/app-campo/node_modules/expo/bin/cli", "start", "mobile/app-campo", "--web", "--localhost"],
+      "port": 8081
+    },
+    {
+      "name": "mobile-app-campo-device",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["mobile/app-campo/node_modules/expo/bin/cli", "start", "mobile/app-campo", "--lan"],
       "port": 8081
     },
     {

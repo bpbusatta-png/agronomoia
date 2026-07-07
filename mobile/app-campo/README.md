@@ -54,7 +54,7 @@ Suíte Jest + React Native Testing Library (44 testes) cobrindo `db.ts` (cache/f
 npm test
 ```
 
-Notas específicas deste setup (SDK 57 + React 19 + RNTL v14):
+Notas específicas deste setup (SDK 54 + React 19 + RNTL v14):
 - `Platform.OS` é forçado para `'web'` no setup (`src/test/setup.ts`) — os testes exercitam o mesmo caminho de código já validado via Expo web nesta sessão (`localStorage` em vez de `expo-sqlite`/`expo-secure-store`), evitando ter que mockar módulos nativos.
 - `render`, `renderHook` e todo `fireEvent.*` desta versão do RNTL são **assíncronos** — sempre `await`. Sem isso os testes rodam com estado desatualizado (falha silenciosa, não erro).
 - Sem `getByLabelText` utilizável (os `TextInput` não têm `accessibilityLabel`, só um `<Text>` irmão como rótulo visual) — os testes usam `testID` explícito nos campos que precisam ser preenchidos.
