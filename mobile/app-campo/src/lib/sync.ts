@@ -246,3 +246,25 @@ export function syncPendingOcorrenciasDoencas(): Promise<SyncResult> {
     }),
   )
 }
+
+export interface ColheitaPayload {
+  talhao_id: string
+  talhao_codigo: string
+  safra_id: string | null
+  safra_nome: string | null
+  data: string | null
+  quantidade_kg: string | null
+  umidade_colheita: string | null
+  qualidade_semente: string | null
+}
+
+export function syncPendingColheita(): Promise<SyncResult> {
+  return syncQueue<ColheitaPayload>('colheita', 'colheita', '/colheita', (p) => ({
+    talhao_id: p.talhao_id,
+    safra_id: p.safra_id,
+    data: p.data,
+    quantidade_kg: p.quantidade_kg ? Number(p.quantidade_kg) : null,
+    umidade_colheita: p.umidade_colheita ? Number(p.umidade_colheita) : null,
+    qualidade_semente: p.qualidade_semente,
+  }))
+}

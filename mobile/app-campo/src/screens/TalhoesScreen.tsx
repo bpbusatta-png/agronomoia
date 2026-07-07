@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { useAuth } from '../auth/AuthContext'
 import { api } from '../lib/api'
-import { getTalhoes, upsertCache, upsertTalhoes, type TalhaoCache } from '../lib/db'
+import { getTalhoes, upsertCache, upsertTalhoes, type SafraCache, type TalhaoCache } from '../lib/db'
 
 interface ApiRow {
   id: string
@@ -56,6 +56,10 @@ export function TalhoesScreen() {
       await upsertCache(
         'doencas_catalogo',
         doencasRes.data.map((d) => ({ id: d.id, nome: String(d.nome ?? d.id) })),
+      )
+      await upsertCache<SafraCache>(
+        'safras',
+        safrasRes.data.map((s) => ({ id: s.id, nome: String(s.nome ?? s.id) })),
       )
       setTalhoes(rows)
     } catch {

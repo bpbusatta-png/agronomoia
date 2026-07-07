@@ -4,11 +4,15 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { AuthProvider, useAuth } from './src/auth/AuthContext'
 import { AnalisesSoloScreen } from './src/screens/AnalisesSoloScreen'
 import { AplicacoesScreen } from './src/screens/AplicacoesScreen'
+import { ColheitaScreen } from './src/screens/ColheitaScreen'
 import { FotografiasScreen } from './src/screens/FotografiasScreen'
 import { InspecoesScreen } from './src/screens/InspecoesScreen'
 import { LoginScreen } from './src/screens/LoginScreen'
+import { NdviScreen } from './src/screens/NdviScreen'
 import { OcorrenciasDoencasScreen } from './src/screens/OcorrenciasDoencasScreen'
 import { OcorrenciasPragasScreen } from './src/screens/OcorrenciasPragasScreen'
+import { PlantasAtipicasValidacaoScreen } from './src/screens/PlantasAtipicasValidacaoScreen'
+import { ProdutividadeScreen } from './src/screens/ProdutividadeScreen'
 import { TalhoesScreen } from './src/screens/TalhoesScreen'
 
 const TABS = [
@@ -19,6 +23,10 @@ const TABS = [
   { key: 'solo', label: 'Solo' },
   { key: 'pragas', label: 'Pragas' },
   { key: 'doencas', label: 'Doenças' },
+  { key: 'colheita', label: 'Colheita' },
+  { key: 'ndvi', label: 'NDVI' },
+  { key: 'produtividade', label: 'Produtividade' },
+  { key: 'validacao_plantas_atipicas', label: 'Validação' },
 ] as const
 
 type Tab = (typeof TABS)[number]['key']
@@ -47,6 +55,10 @@ function Root() {
         {tab === 'solo' && <AnalisesSoloScreen />}
         {tab === 'pragas' && <OcorrenciasPragasScreen />}
         {tab === 'doencas' && <OcorrenciasDoencasScreen />}
+        {tab === 'colheita' && <ColheitaScreen />}
+        {tab === 'ndvi' && <NdviScreen />}
+        {tab === 'produtividade' && <ProdutividadeScreen />}
+        {tab === 'validacao_plantas_atipicas' && <PlantasAtipicasValidacaoScreen />}
       </View>
       <View style={styles.tabBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>

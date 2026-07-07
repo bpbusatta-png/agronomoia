@@ -19,6 +19,31 @@ export interface DoencaCatalogoCache {
   nome: string
 }
 
+export interface SafraCache {
+  id: string
+  nome: string
+}
+
+export interface NdviLeituraCache {
+  id: string
+  talhao_id: string
+  data: string | null
+  fonte: string | null
+  ndvi_medio: string | null
+  ndre_medio: string | null
+  msavi_medio: string | null
+}
+
+export interface ProdutividadeEstimativaCache {
+  id: string
+  talhao_id: string
+  safra_id: string | null
+  data: string | null
+  produtividade_estimada_kg_ha: string | null
+  intervalo_confianca_min: string | null
+  intervalo_confianca_max: string | null
+}
+
 export type SyncStatus = 'pendente' | 'sincronizado' | 'erro'
 
 export interface InspecaoLocal {

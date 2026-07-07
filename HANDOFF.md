@@ -92,9 +92,11 @@ npx expo start --web
 
 ### App mobile de campo
 
-- Login JWT (mesmo backend), 7 telas: Talhões (leitura), Inspeções, Fotografias, Aplicações, Análises de Solo, Ocorrências de Pragas, Ocorrências de Doenças.
+- Login JWT (mesmo backend), 11 telas: Talhões (leitura), Inspeções, Fotografias, Aplicações, Análises de Solo, Ocorrências de Pragas, Ocorrências de Doenças, Colheita, NDVI, Produtividade, Validação (plantas atípicas).
 - **Offline-first de verdade**: cada cadastro grava local primeiro (SQLite nativo em iOS/Android; `localStorage` só no modo web, usado apenas para testar sem emulador) e sincroniza quando há conexão, com fila de reenvio automático em caso de falha.
-- Camada genérica reaproveitada por 4 das 7 telas: `reference_cache` (catálogos somente-leitura) e `local_queue` (fila offline) em `db.ts`, `syncQueue()` em `sync.ts`, `CachePickerModal.tsx` para seletores.
+- Camada genérica reaproveitada por 5 das 7 telas de cadastro: `reference_cache` (catálogos somente-leitura) e `local_queue` (fila offline) em `db.ts`, `syncQueue()` em `sync.ts`, `CachePickerModal.tsx` para seletores.
+- **NDVI/Produtividade**: telas somente-leitura (mesmo papel `Tecnico_Campo` não tem permissão de escrita nessas entidades no backend) — buscam do servidor e cacheiam localmente para consulta offline, sem fila de sincronização (não há o que reenviar).
+- **Validação de plantas atípicas**: busca ao vivo a lista de ocorrências `pendente_validacao` e permite decidir manter/eliminar (`POST /plantas-atipicas/{id}/validar`) — sem fila offline (a ação em si exige conexão); visível a todos os papéis, mas o backend rejeita com 403 quem não for Administrador/Agronomo_RT. Mesmo fluxo de decisão do dashboard web (`PlantasAtipicasPage.tsx`).
 - Testado apenas via **Expo web** — não há emulador Android/iOS nesta máquina. Ver ressalvas abaixo.
 
 ## Decisões e obstáculos técnicos relevantes
@@ -106,10 +108,12 @@ npx expo start --web
 - **Bug real corrigido**: `syncPendingInspecoes`/`syncQueue` só reenviavam itens com status `pendente`; um item que falhasse uma vez (`erro`) nunca mais era reenviado. Corrigido para incluir `erro` no filtro de retry — testado derrubando o backend de propósito.
 - **Bug real corrigido**: modal de formulário sem `max-height`/scroll travava o botão "Salvar" fora da área visível em formulários longos (10+ campos). Corrigido com `max-h-[90vh] overflow-y-auto`.
 - **Bug real corrigido**: schema original tinha `plantas_atipicas_ocorrencias.validado_por NOT NULL` mas `status` com default `'pendente_validacao'` — contradição lógica (decidido com o usuário: `validado_por` virou opcional, só preenchido pelo endpoint de validação).
+- **`backend/.env` some entre sessões** (git-ignorado, como esperado) — se o backend falhar ao subir com `ValidationError: database_url/secret_key Field required`, é só recriar com `copy .env.example .env` e ajustar `DATABASE_URL` para a instância Postgres portátil (porta 5433, usuário `postgres`/`agronomo`, banco `agronomo_ia`) e gerar um `SECRET_KEY` novo.
+- **Startup do backend trava em "Waiting for application startup"** se o MinIO não estiver no ar — o `ensure_bucket()` do `@app.on_event("startup")` tenta conectar e demora bastante antes de desistir (mesmo estando dentro de um try/except). Suba o MinIO (`preview_start` "minio" ou o binário direto) antes do backend para evitar a espera.
 
 ## O que falta / próximos passos possíveis
 
-- **Mobile**: histórico climático e telas mais analíticas (NDVI, produtividade, colheita, validação de plantas atípicas) só existem no dashboard web ainda.
+- **Mobile**: histórico climático e modelos de IA só existem no dashboard web ainda (dado mais administrativo, sem uso de campo).
 - **Testes automatizados**: backend agora tem suíte pytest (28 testes, `backend/tests/`) cobrindo login/refresh JWT, RBAC do núcleo organizacional, gate de validação humana de plantas atípicas e upload de arquivos (mockado, sem depender do MinIO rodando) — roda contra banco Postgres real separado (`agronomo_ia_test`) com isolamento por rollback de transação. Ver seção "Testes automatizados (backend)" no `README.md`. Frontend (dashboard/mobile) segue sem testes automatizados; validação continua manual (curl + navegador).
 - **CI/CD**: inexistente.
 - **Storage em produção**: MinIO local funciona para dev; produção exigiria AWS S3/Cloudflare R2 real com URLs assinadas (hoje o bucket é público para simplificar o MVP local).
