@@ -228,7 +228,7 @@ export const fotografiasConfig: EntityConfig = {
   fields: [
     { name: 'talhao_id', label: 'Talhão', type: 'select', required: true, optionsFrom: 'talhoes' },
     { name: 'inspecao_id', label: 'Inspeção (opcional)', type: 'select', optionsFrom: 'inspecoes' },
-    { name: 'url_arquivo', label: 'URL do arquivo', type: 'text', required: true },
+    { name: 'url_arquivo', label: 'Foto', type: 'file', required: true },
     {
       name: 'tipo',
       label: 'Tipo',

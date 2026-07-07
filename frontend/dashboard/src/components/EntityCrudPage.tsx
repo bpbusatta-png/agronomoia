@@ -18,6 +18,7 @@ export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props)
   const [editing, setEditing] = useState<Row | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [formValues, setFormValues] = useState<Record<string, string>>({})
+  const [fileValues, setFileValues] = useState<Record<string, File | null>>({})
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -59,6 +60,7 @@ export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props)
   function openCreate() {
     setEditing(null)
     setFormValues({})
+    setFileValues({})
     setShowForm(true)
   }
 
@@ -76,6 +78,7 @@ export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props)
       }
     })
     setFormValues(values)
+    setFileValues({})
     setShowForm(true)
   }
 
@@ -101,20 +104,40 @@ export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props)
           return
         }
       }
+      if (f.type === 'file' && f.required && !fileValues[f.name] && !editing) {
+        alert(`Selecione um arquivo para "${f.label}"`)
+        return
+      }
     }
 
     setSaving(true)
     try {
       const payload: Record<string, unknown> = {}
-      config.fields.forEach((f) => {
+      for (const f of config.fields) {
+        if (f.type === 'file') {
+          const file = fileValues[f.name]
+          if (file) {
+            const uploadData = new FormData()
+            uploadData.append('file', file)
+            const { data } = await api.post<{ url: string }>('/uploads', uploadData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+            })
+            payload[f.name] = data.url
+          } else if (editing) {
+            payload[f.name] = editing[f.name] ?? null
+          } else {
+            payload[f.name] = null
+          }
+          continue
+        }
         if (f.type === 'boolean') {
           payload[f.name] = formValues[f.name] === 'true'
-          return
+          continue
         }
         const raw = formValues[f.name]
         if (raw === undefined || raw === '') {
           payload[f.name] = null
-          return
+          continue
         }
         if (f.type === 'number') {
           payload[f.name] = Number(raw)
@@ -123,7 +146,7 @@ export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props)
         } else {
           payload[f.name] = raw
         }
-      })
+      }
       if (editing) {
         await api.put(`${config.endpoint}/${editing.id}`, payload)
       } else {
@@ -190,11 +213,26 @@ export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props)
               )}
               {items.map((item) => (
                 <tr key={item.id} className="border-b border-gray-100 last:border-0">
-                  {config.columns.map((c) => (
-                    <td key={c.name} className="px-4 py-2 text-gray-700">
-                      {displayValue(item, c.name)}
-                    </td>
-                  ))}
+                  {config.columns.map((c) => {
+                    const field = config.fields.find((f) => f.name === c.name)
+                    const value = item[c.name]
+                    return (
+                      <td key={c.name} className="px-4 py-2 text-gray-700">
+                        {field?.type === 'file' && typeof value === 'string' && value ? (
+                          <a
+                            href={value}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            ver arquivo
+                          </a>
+                        ) : (
+                          displayValue(item, c.name)
+                        )}
+                      </td>
+                    )
+                  })}
                   <td className="px-4 py-2 text-right space-x-3 whitespace-nowrap">
                     {renderExtraAction?.(item, load)}
                     <button onClick={() => openEdit(item)} className="text-blue-600 hover:underline">
@@ -252,6 +290,30 @@ export function EntityCrudPage({ config, refConfigs, renderExtraAction }: Props)
                     onChange={(e) => setFormValues((v) => ({ ...v, [f.name]: e.target.checked ? 'true' : 'false' }))}
                     className="h-4 w-4"
                   />
+                ) : f.type === 'file' ? (
+                  <div>
+                    {editing && formValues[f.name] && !fileValues[f.name] && (
+                      <a
+                        href={formValues[f.name]}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-xs text-blue-600 hover:underline mb-1 truncate"
+                      >
+                        Arquivo atual — ver
+                      </a>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setFileValues((v) => ({ ...v, [f.name]: e.target.files?.[0] ?? null }))
+                      }
+                      className="w-full text-sm"
+                    />
+                    {editing && (
+                      <p className="text-xs text-gray-400 mt-1">Deixe em branco para manter o arquivo atual.</p>
+                    )}
+                  </div>
                 ) : (
                   <input
                     type={f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'}

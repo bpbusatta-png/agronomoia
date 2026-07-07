@@ -88,6 +88,7 @@ npx expo start --web
 - Login JWT + refresh automático, layout com navegação em seções (Núcleo / Monitoramento / Inteligência).
 - **Um componente genérico** (`EntityCrudPage.tsx`) cobre CRUD de ~20 entidades via configuração declarativa (`entities/configs.ts`) — adicionar uma entidade nova não exige uma página nova.
 - Tela dedicada só para Plantas Atípicas (`PlantasAtipicasPage.tsx`), com o botão "Validar" (ação extra fora do CRUD padrão).
+- Fotografias: campo de tipo `file` no componente genérico sobe o arquivo para `POST /api/uploads` antes de criar/editar o registro, preservando o arquivo existente se nenhum novo for escolhido.
 
 ### App mobile de campo
 
@@ -109,7 +110,6 @@ npx expo start --web
 ## O que falta / próximos passos possíveis
 
 - **Mobile**: histórico climático e telas mais analíticas (NDVI, produtividade, colheita, validação de plantas atípicas) só existem no dashboard web ainda.
-- **Dashboard**: formulário de fotografias ainda usa campo de texto manual para URL (não tem upload de arquivo via UI — o endpoint de upload existe e é usado pelo mobile, mas a tela web não foi conectada a ele).
 - **Testes automatizados**: nenhum teste unitário/integração foi escrito; toda validação nesta sessão foi manual (curl + navegador).
 - **CI/CD**: inexistente.
 - **Storage em produção**: MinIO local funciona para dev; produção exigiria AWS S3/Cloudflare R2 real com URLs assinadas (hoje o bucket é público para simplificar o MVP local).

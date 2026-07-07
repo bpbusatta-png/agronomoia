@@ -1,4 +1,4 @@
-export type FieldType = 'text' | 'number' | 'date' | 'select' | 'json' | 'boolean'
+export type FieldType = 'text' | 'number' | 'date' | 'select' | 'json' | 'boolean' | 'file'
 
 export interface SelectOption {
   value: string
