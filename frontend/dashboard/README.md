@@ -24,3 +24,16 @@ Acesse http://localhost:5173. Requer o [backend](../../backend) rodando (com COR
 - `src/pages/PlantasAtipicasPage.tsx` — única tela que não é um `EntityCrudPage` puro: adiciona o botão "Validar" (gate humano obrigatório) que chama `POST /plantas-atipicas/{id}/validar`, restrito a Administrador/Agronomo_RT
 
 Adicionar uma nova entidade = criar um `EntityConfig` em `entities/configs.ts`, uma rota em `App.tsx` e um item em `layout/AppShell.tsx` — não precisa de uma página nova por entidade.
+
+## Testes automatizados
+
+Suíte Vitest + React Testing Library (25 testes) cobrindo login/logout (`AuthContext`), o gate de rota autenticada (`RequireAuth`), o motor genérico de CRUD (`EntityCrudPage` — listar, criar, editar, excluir, validação de JSON, upload de arquivo, mensagens de erro) e o fluxo de validação humana (`PlantasAtipicasPage`). A API (`../lib/api`) é mockada em cada teste — nenhum teste depende do backend estar no ar.
+
+```
+npm test        # roda uma vez (usado no CI)
+npm run test:watch   # modo watch, para desenvolvimento
+```
+
+Observação: os `<label>` do formulário genérico (`EntityCrudPage`) não têm `htmlFor`/`id` ligando ao input — os testes acham o campo pelo texto do label e navegam até o irmão (`input`/`select`/`textarea`) em vez de usar `getByLabelText`. Vale considerar adicionar essa associação por acessibilidade, não só para testes.
+
+CI: `.github/workflows/frontend-tests.yml` roda essa suíte e o build de produção a cada push/pull request.
