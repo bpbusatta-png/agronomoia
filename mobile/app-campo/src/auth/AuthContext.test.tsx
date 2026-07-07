@@ -42,6 +42,27 @@ describe('AuthContext (mobile)', () => {
     expect(result.current.isAuthenticated).toBe(true)
   })
 
+  it('login salva o email e expoe em userEmail', async () => {
+    axiosPostSpy.mockResolvedValue({ data: { access_token: 'abc123', refresh_token: 'refresh456' } })
+    const { result } = await renderHook(() => useAuth(), { wrapper: AuthProvider })
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.login('admin@agronomo.ia', 'senha123')
+    })
+
+    expect(result.current.userEmail).toBe('admin@agronomo.ia')
+  })
+
+  it('restaura o userEmail salvo ao montar', async () => {
+    await setTokens('token-existente', 'refresh-existente')
+    localStorage.setItem('user_email', 'campo@agronomo.ia')
+    const { result } = await renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.userEmail).toBe('campo@agronomo.ia')
+  })
+
   it('login com credenciais invalidas rejeita e nao autentica', async () => {
     axiosPostSpy.mockRejectedValue(new Error('401'))
     const { result } = await renderHook(() => useAuth(), { wrapper: AuthProvider })
@@ -66,5 +87,22 @@ describe('AuthContext (mobile)', () => {
     })
 
     expect(result.current.isAuthenticated).toBe(false)
+  })
+
+  it('logout tambem limpa o email salvo', async () => {
+    axiosPostSpy.mockResolvedValue({ data: { access_token: 'abc123', refresh_token: 'refresh456' } })
+    const { result } = await renderHook(() => useAuth(), { wrapper: AuthProvider })
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.login('admin@agronomo.ia', 'senha123')
+    })
+    expect(result.current.userEmail).toBe('admin@agronomo.ia')
+
+    await act(async () => {
+      await result.current.logout()
+    })
+
+    expect(result.current.userEmail).toBeNull()
   })
 })

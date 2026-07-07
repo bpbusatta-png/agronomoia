@@ -44,11 +44,11 @@ Requer o [backend](../../backend) rodando (com o [MinIO](../../README.md#armazen
 - `src/components/CachePickerModal.tsx` — modal de seleção genérico (usado para escolher talhão, safra, praga, doença, planta daninha ou característica de planta atípica a partir do cache local ou de uma lista estática)
 - `src/screens/` — uma tela por entidade. Telas de cadastro seguem o mesmo formato: seletor(es) via `CachePickerModal`, campos de formulário, botão "Salvar (funciona offline)", contador de pendentes + "Sincronizar agora", lista local com status. `NdviScreen`/`ProdutividadeScreen` seguem o padrão somente-leitura de `TalhoesScreen` (busca + cache local, pull-to-refresh); `PlantasAtipicasValidacaoScreen` busca a lista ao vivo (sem fila offline, já que a ação exige conexão) e reaproveita o mesmo fluxo de decisão (manter/eliminar + justificativa) do dashboard web; `ReconhecimentoScreen` tira/escolhe foto e chama `POST /api/reconhecimento/classificar` direto (sem fila offline — depende da API de IA estar acessível), recebendo um callback `onIrParaTab` de `App.tsx` para pular para a aba de cadastro do tipo sugerido
 
-Navegação entre as 14 telas é uma barra de abas rolável horizontalmente em `App.tsx` (sem biblioteca de navegação).
+Navegação entre as 14 telas é uma barra de abas rolável horizontalmente em `App.tsx` (sem biblioteca de navegação), com ícones `MaterialCommunityIcons` (`@expo/vector-icons`) por aba. Um cabeçalho verde fixo acima (logo + título + avatar com iniciais do e-mail + logout) segue a mesma linguagem visual do `AppShell.tsx` do dashboard web.
 
 ## Testes automatizados
 
-Suíte Jest + React Native Testing Library (44 testes) cobrindo `db.ts` (cache/fila genéricos), `sync.ts` (retry pendente+erro, upload de fotos em dois passos), `api.ts` (injeção de token, refresh em 401), `tokenStorage.ts`, `AuthContext` e duas telas representativas (`ColheitaScreen` — cadastro offline-first; `ReconhecimentoScreen` — câmera/galeria + classificação).
+Suíte Jest + React Native Testing Library (47 testes) cobrindo `db.ts` (cache/fila genéricos), `sync.ts` (retry pendente+erro, upload de fotos em dois passos), `api.ts` (injeção de token, refresh em 401), `tokenStorage.ts`, `AuthContext` (incluindo `userEmail`) e duas telas representativas (`ColheitaScreen` — cadastro offline-first; `ReconhecimentoScreen` — câmera/galeria + classificação).
 
 ```
 npm test
@@ -64,4 +64,4 @@ CI: `.github/workflows/mobile-tests.yml` roda `tsc --noEmit` + a suíte a cada p
 
 ## Próximos passos (fora desta leva)
 
-Histórico climático e modelos de IA (ficam só no dashboard web — dado mais administrativo, `Tecnico_Campo` não tem permissão de escrita e não haveria uso de campo). Testar em emulador/dispositivo Android/iOS de verdade (só validado via Expo web até aqui).
+Histórico climático e modelos de IA (ficam só no dashboard web — dado mais administrativo, `Tecnico_Campo` não tem permissão de escrita e não haveria uso de campo). Testado via Expo Go num Android físico; iOS de verdade ainda não testado.

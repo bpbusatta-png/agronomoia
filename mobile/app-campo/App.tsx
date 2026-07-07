@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { StatusBar } from 'expo-status-bar'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
@@ -19,26 +20,55 @@ import { ReconhecimentoScreen } from './src/screens/ReconhecimentoScreen'
 import { TalhoesScreen } from './src/screens/TalhoesScreen'
 
 const TABS = [
-  { key: 'talhoes', label: 'Talhões' },
-  { key: 'reconhecimento', label: 'Reconhecimento IA' },
-  { key: 'inspecoes', label: 'Inspeções' },
-  { key: 'fotografias', label: 'Fotos' },
-  { key: 'aplicacoes', label: 'Aplicações' },
-  { key: 'solo', label: 'Solo' },
-  { key: 'pragas', label: 'Pragas' },
-  { key: 'doencas', label: 'Doenças' },
-  { key: 'plantas_daninhas', label: 'Plantas Daninhas' },
-  { key: 'atipicas', label: 'Plantas Atípicas' },
-  { key: 'colheita', label: 'Colheita' },
-  { key: 'ndvi', label: 'NDVI' },
-  { key: 'produtividade', label: 'Produtividade' },
-  { key: 'validacao_plantas_atipicas', label: 'Validação' },
+  { key: 'talhoes', label: 'Talhões', icon: 'map-marker-radius' },
+  { key: 'reconhecimento', label: 'Reconhecimento IA', icon: 'auto-fix' },
+  { key: 'inspecoes', label: 'Inspeções', icon: 'clipboard-check-outline' },
+  { key: 'fotografias', label: 'Fotos', icon: 'camera' },
+  { key: 'aplicacoes', label: 'Aplicações', icon: 'spray' },
+  { key: 'solo', label: 'Solo', icon: 'flask-outline' },
+  { key: 'pragas', label: 'Pragas', icon: 'bug-outline' },
+  { key: 'doencas', label: 'Doenças', icon: 'virus-outline' },
+  { key: 'plantas_daninhas', label: 'Plantas Daninhas', icon: 'grass' },
+  { key: 'atipicas', label: 'Plantas Atípicas', icon: 'dna' },
+  { key: 'colheita', label: 'Colheita', icon: 'barley' },
+  { key: 'ndvi', label: 'NDVI', icon: 'satellite-variant' },
+  { key: 'produtividade', label: 'Produtividade', icon: 'trending-up' },
+  { key: 'validacao_plantas_atipicas', label: 'Validação', icon: 'shield-check-outline' },
 ] as const
 
 type Tab = (typeof TABS)[number]['key']
 
+function initials(email: string | null): string {
+  if (!email) return '?'
+  return email.slice(0, 2).toUpperCase()
+}
+
+function Header({ userEmail, onLogout }: { userEmail: string | null; onLogout: () => void }) {
+  return (
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <View style={styles.logoBox}>
+          <MaterialCommunityIcons name="sprout" size={22} color="#fff" />
+        </View>
+        <View>
+          <Text style={styles.headerTitle}>Agrônomo IA</Text>
+          <Text style={styles.headerSubtitle}>Inteligência agrícola em campo</Text>
+        </View>
+      </View>
+      <View style={styles.headerRight}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initials(userEmail)}</Text>
+        </View>
+        <Pressable onPress={onLogout} testID="logout-button" style={styles.logoutButton}>
+          <MaterialCommunityIcons name="logout" size={20} color="#fff" />
+        </Pressable>
+      </View>
+    </View>
+  )
+}
+
 function Root() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading, userEmail, logout } = useAuth()
   const [tab, setTab] = useState<Tab>('talhoes')
 
   if (loading) {
@@ -53,6 +83,7 @@ function Root() {
 
   return (
     <View style={styles.flex}>
+      <Header userEmail={userEmail} onLogout={logout} />
       <View style={styles.flex}>
         {tab === 'talhoes' && <TalhoesScreen />}
         {tab === 'reconhecimento' && <ReconhecimentoScreen onIrParaTab={(t) => setTab(t as Tab)} />}
@@ -78,6 +109,11 @@ function Root() {
               onPress={() => setTab(t.key)}
               testID={`tab-${t.key}`}
             >
+              <MaterialCommunityIcons
+                name={t.icon}
+                size={22}
+                color={tab === t.key ? '#15803d' : '#9ca3af'}
+              />
               <Text style={tab === t.key ? styles.tabTextActive : styles.tabText}>{t.label}</Text>
             </Pressable>
           ))}
@@ -91,7 +127,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Root />
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </AuthProvider>
   )
 }
@@ -106,6 +142,58 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#f9fafb',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#15803d',
+    paddingTop: 48,
+    paddingBottom: 14,
+    paddingHorizontal: 16,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  logoBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 11,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  avatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  logoutButton: {
+    padding: 4,
+  },
   tabBar: {
     flexDirection: 'row',
     borderTopWidth: 1,
@@ -113,16 +201,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   tabItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     alignItems: 'center',
+    gap: 2,
   },
   tabText: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#9ca3af',
   },
   tabTextActive: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#15803d',
     fontWeight: '600',
   },

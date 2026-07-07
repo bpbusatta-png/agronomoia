@@ -102,7 +102,8 @@ npx expo start --web
 - **NDVI/Produtividade**: telas somente-leitura (mesmo papel `Tecnico_Campo` não tem permissão de escrita nessas entidades no backend) — buscam do servidor e cacheiam localmente para consulta offline, sem fila de sincronização (não há o que reenviar).
 - **Validação de plantas atípicas**: busca ao vivo a lista de ocorrências `pendente_validacao` e permite decidir manter/eliminar (`POST /plantas-atipicas/{id}/validar`) — sem fila offline (a ação em si exige conexão); visível a todos os papéis, mas o backend rejeita com 403 quem não for Administrador/Agronomo_RT. Mesmo fluxo de decisão do dashboard web.
 - **Reconhecimento IA**: tira/escolhe foto, chama `POST /api/reconhecimento/classificar` (sem fila offline — precisa de conexão com a API de IA) e mostra a sugestão com um botão que pula direto para a aba de cadastro do tipo identificado (`onIrParaTab`, prop vinda de `App.tsx`, que só troca o estado de aba local). Reaproveita `buildFotoFormData()` (exportado de `sync.ts`) para montar o multipart a partir da URI da foto.
-- Testado apenas via **Expo web** — não há emulador Android/iOS nesta máquina. Ver ressalvas abaixo.
+- Testado via **Expo web** e via **Expo Go num Android físico** (SDK 54, ver ressalvas abaixo). iOS ainda não testado.
+- **Visual alinhado ao redesign do dashboard**: cabeçalho verde fixo em `App.tsx` (logo + "Agrônomo IA" + subtítulo + avatar com iniciais do `userEmail` + botão de logout) e barra de abas inferior com ícones `MaterialCommunityIcons` (`@expo/vector-icons`) além do texto — mesma linguagem visual do `AppShell.tsx` do dashboard. O botão de logout que existia só em `TalhoesScreen` foi removido dali (duplicado) e centralizado no cabeçalho global. Todas as 14 telas tiveram `paddingTop` reduzido de `56` para `16` (o cabeçalho global agora cobre o espaço da status bar, que antes cada tela compensava sozinha).
 
 ## Testes automatizados e CI
 
@@ -112,7 +113,7 @@ Os 3 apps têm suíte de testes e workflow de CI próprio (`.github/workflows/`)
 |---|---|---|---|---|
 | Backend | pytest | 39 | login/refresh JWT, RBAC do núcleo organizacional, gate de validação humana, upload de arquivos, reconhecimento por IA (mockado) — roda contra `agronomo_ia_test` real com isolamento por rollback de transação | `.github/workflows/backend-tests.yml` |
 | Dashboard | Vitest + React Testing Library | 38 | `AuthContext` (incluindo `userEmail`), `RequireAuth`, `EntityCrudPage` (motor genérico de CRUD), `PlantasAtipicasPage`, `ReconhecimentoPage`, `HomePage` (dashboard inicial) — API mockada | `.github/workflows/frontend-tests.yml` |
-| Mobile | Jest + React Native Testing Library | 44 | `db.ts` (cache/fila genéricos), `sync.ts` (retry pendente+erro, upload em dois passos), `api.ts` (interceptors via `axios-mock-adapter`), `AuthContext`, `ColheitaScreen`, `ReconhecimentoScreen` — `Platform.OS` forçado para `'web'` no setup | `.github/workflows/mobile-tests.yml` |
+| Mobile | Jest + React Native Testing Library | 47 | `db.ts` (cache/fila genéricos), `sync.ts` (retry pendente+erro, upload em dois passos), `api.ts` (interceptors via `axios-mock-adapter`), `AuthContext` (incluindo `userEmail`), `ColheitaScreen`, `ReconhecimentoScreen` — `Platform.OS` forçado para `'web'` no setup | `.github/workflows/mobile-tests.yml` |
 
 Detalhes e comandos (`npm test`, `pytest`, etc.) na seção "Testes automatizados" de cada `README.md`.
 
@@ -135,7 +136,7 @@ Detalhes e comandos (`npm test`, `pytest`, etc.) na seção "Testes automatizado
 ## O que falta / próximos passos possíveis
 
 - **Mobile**: histórico climático e modelos de IA só existem no dashboard web ainda (dado mais administrativo, sem uso de campo).
-- **Emulador mobile real**: todo o app mobile foi validado via Expo web; testar em um dispositivo/emulador Android ou iOS de verdade ainda não foi feito.
+- **iOS real**: mobile testado em Expo web e num Android físico via Expo Go; iOS ainda não testado (sem dispositivo/máquina Mac disponível nesta sessão).
 - **Storage em produção**: MinIO local funciona para dev; produção exigiria AWS S3/Cloudflare R2 real com URLs assinadas (hoje o bucket é público para simplificar o MVP local).
 - **Dataset de reconhecimento por IA ainda é pequeno**: o acúmulo híbrido em `dataset_rotulos` começou a rodar nesta sessão — ainda não há volume suficiente para considerar treinar um modelo próprio (ver checklist em [docs/02-trilha-b-inteligencia/pipeline-dados-rotulagem.md](docs/02-trilha-b-inteligencia/pipeline-dados-rotulagem.md)).
 - **Acessibilidade do dashboard**: `<label>` dos formulários (`EntityCrudPage.tsx`, `LoginPage.tsx`) não têm `htmlFor`/`id` ligando ao input — sinalizado como tarefa separada (ver chip de sugestão gerado durante a sessão).

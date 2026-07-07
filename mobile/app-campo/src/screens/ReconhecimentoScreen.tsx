@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
   content: {
-    paddingTop: 56,
+    paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 24,
   },

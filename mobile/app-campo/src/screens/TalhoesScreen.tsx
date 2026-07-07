@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import { useAuth } from '../auth/AuthContext'
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { api } from '../lib/api'
 import { getTalhoes, upsertCache, upsertTalhoes, type SafraCache, type TalhaoCache } from '../lib/db'
 
@@ -10,7 +9,6 @@ interface ApiRow {
 }
 
 export function TalhoesScreen() {
-  const { logout } = useAuth()
   const [talhoes, setTalhoes] = useState<TalhaoCache[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,9 +81,6 @@ export function TalhoesScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Talhões</Text>
-        <Pressable onPress={logout} testID="logout-button">
-          <Text style={styles.logout}>Sair</Text>
-        </Pressable>
       </View>
 
       {error && <Text style={styles.error}>{error}</Text>}
@@ -116,7 +111,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
-    paddingTop: 56,
+    paddingTop: 16,
   },
   header: {
     flexDirection: 'row',
@@ -129,10 +124,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#08060d',
-  },
-  logout: {
-    color: '#dc2626',
-    fontSize: 14,
   },
   error: {
     color: '#b45309',
