@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from uuid import UUID
 
@@ -13,6 +14,8 @@ from core.roles import campo_ou_rt_ou_admin
 from models import ModeloVersao
 from schemas.log_predicao_ia import LogPredicaoIACreate
 from schemas.reconhecimento import ReconhecimentoResponse
+
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(prefix="/reconhecimento", tags=["reconhecimento"])
 
@@ -61,6 +64,7 @@ async def classificar(
             detail="Reconhecimento por IA não configurado (defina ANTHROPIC_API_KEY no backend).",
         )
     except Exception:
+        logger.exception("Falha ao consultar a IA de reconhecimento (POST /reconhecimento/classificar)")
         raise HTTPException(status_code=502, detail="Erro ao consultar o serviço de IA. Tente novamente.")
 
     modelo = _get_or_create_modelo_versao(db)
