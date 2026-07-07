@@ -20,7 +20,9 @@ import {
   modelosVersoesConfig,
   ndviLeiturasConfig,
   ocorrenciasDoencasConfig,
+  ocorrenciasPlantasDaninhasConfig,
   ocorrenciasPragasConfig,
+  plantasDaninhasCatalogoConfig,
   pragasCatalogoConfig,
   produtividadeEstimativasConfig,
   safrasConfig,
@@ -29,6 +31,7 @@ import {
 import { AppShell } from './layout/AppShell'
 import { HomePage } from './pages/HomePage'
 import { PlantasAtipicasPage } from './pages/PlantasAtipicasPage'
+import { ReconhecimentoPage } from './pages/ReconhecimentoPage'
 
 function App() {
   return (
@@ -90,6 +93,15 @@ function App() {
             <Route
               path="/ocorrencias-doencas"
               element={<EntityCrudPage config={ocorrenciasDoencasConfig} refConfigs={allConfigs} />}
+            />
+            <Route path="/reconhecimento" element={<ReconhecimentoPage />} />
+            <Route
+              path="/plantas-daninhas-catalogo"
+              element={<EntityCrudPage config={plantasDaninhasCatalogoConfig} refConfigs={allConfigs} />}
+            />
+            <Route
+              path="/ocorrencias-plantas-daninhas"
+              element={<EntityCrudPage config={ocorrenciasPlantasDaninhasConfig} refConfigs={allConfigs} />}
             />
             <Route path="/plantas-atipicas" element={<PlantasAtipicasPage />} />
             <Route

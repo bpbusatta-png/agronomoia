@@ -3,7 +3,7 @@
 Dashboard web (React + TypeScript + Vite + Tailwind CSS) para o Agrônomo IA:
 - **Núcleo organizacional**: empresas, cooperados, fazendas, safras, cultivares, talhões e contratos
 - **Monitoramento de campo**: inspeções, aplicações, histórico climático, análises de solo e fotografias
-- **Inteligência especializada**: catálogo/ocorrências de pragas e doenças, plantas atípicas (com validação humana obrigatória), NDVI, produtividade, colheita e modelos de IA
+- **Inteligência especializada**: catálogo/ocorrências de pragas, doenças e plantas daninhas, plantas atípicas (com validação humana obrigatória), NDVI, produtividade, colheita, modelos de IA e reconhecimento por IA (upload de foto → sugestão de classificação)
 
 ## Rodando localmente
 
@@ -21,13 +21,14 @@ Acesse http://localhost:5173. Requer o [backend](../../backend) rodando (com COR
 - `src/lib/api.ts` — cliente Axios com injeção do token e renovação automática via refresh token em respostas 401
 - `src/entities/configs.ts` — configuração declarativa de cada entidade: campos do formulário (`text`/`number`/`date`/`select`/`json`/`boolean`/`file`), colunas da tabela, referências de FK para selects (`optionsFrom`) e opções fixas para enums (`staticOptions`, ex: `tipo` de fotografia)
 - `src/components/EntityCrudPage.tsx` — componente genérico de CRUD (listar/criar/editar/excluir) reutilizado por todas as entidades, resolvendo IDs de FK para o rótulo legível usando as listas referenciadas; campos `json` (ex: `nutrientes` de análises de solo) validam o JSON antes de enviar; campos `file` (ex: `url_arquivo` de fotografias) sobem o arquivo para `POST /api/uploads` antes de montar o payload, e preservam o arquivo existente se nenhum novo for escolhido ao editar; aceita `renderExtraAction` para ações extras por linha além de Editar/Excluir
-- `src/pages/PlantasAtipicasPage.tsx` — única tela que não é um `EntityCrudPage` puro: adiciona o botão "Validar" (gate humano obrigatório) que chama `POST /plantas-atipicas/{id}/validar`, restrito a Administrador/Agronomo_RT
+- `src/pages/PlantasAtipicasPage.tsx` — adiciona o botão "Validar" (gate humano obrigatório) que chama `POST /plantas-atipicas/{id}/validar`, restrito a Administrador/Agronomo_RT
+- `src/pages/ReconhecimentoPage.tsx` — não é um `EntityCrudPage`: upload de foto para `POST /api/reconhecimento/classificar` (IA de visão via API, ver README.md da raiz), mostra a sugestão (tipo/nome/confiança) e um atalho para a tela de criação da ocorrência do tipo identificado
 
 Adicionar uma nova entidade = criar um `EntityConfig` em `entities/configs.ts`, uma rota em `App.tsx` e um item em `layout/AppShell.tsx` — não precisa de uma página nova por entidade.
 
 ## Testes automatizados
 
-Suíte Vitest + React Testing Library (25 testes) cobrindo login/logout (`AuthContext`), o gate de rota autenticada (`RequireAuth`), o motor genérico de CRUD (`EntityCrudPage` — listar, criar, editar, excluir, validação de JSON, upload de arquivo, mensagens de erro) e o fluxo de validação humana (`PlantasAtipicasPage`). A API (`../lib/api`) é mockada em cada teste — nenhum teste depende do backend estar no ar.
+Suíte Vitest + React Testing Library (30 testes) cobrindo login/logout (`AuthContext`), o gate de rota autenticada (`RequireAuth`), o motor genérico de CRUD (`EntityCrudPage` — listar, criar, editar, excluir, validação de JSON, upload de arquivo, mensagens de erro), o fluxo de validação humana (`PlantasAtipicasPage`) e o reconhecimento por IA (`ReconhecimentoPage`). A API (`../lib/api`) é mockada em cada teste — nenhum teste depende do backend estar no ar.
 
 ```
 npm test        # roda uma vez (usado no CI)

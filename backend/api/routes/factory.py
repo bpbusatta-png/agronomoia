@@ -27,6 +27,7 @@ def crud_router(
     inject_usuario_field: Optional[str] = None,
     enable_update: bool = True,
     enable_delete: bool = True,
+    on_create: Optional[Callable] = None,
 ) -> APIRouter:
     write_dep = write_dep or read_dep
     create_dep = create_dep or write_dep
@@ -50,6 +51,8 @@ def crud_router(
         extra = {inject_usuario_field: current_user.id} if inject_usuario_field else {}
         obj = crud.create(db, obj_in, **extra)
         log_operacao(current_user, tag, "criar", obj.id)
+        if on_create:
+            on_create(db, obj, current_user)
         return obj
 
     if enable_update:

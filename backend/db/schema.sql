@@ -2,7 +2,8 @@
 -- Gerado a partir de docs/01-trilha-a-plataforma/schema-banco-de-dados.md
 -- Ordem de criação ajustada para respeitar as foreign keys (ver nota original:
 -- modelos_versoes precisa existir antes de ocorrencias_pragas/ocorrencias_doencas/
--- plantas_atipicas_ocorrencias; dataset_rotulos precisa existir depois de fotografias).
+-- ocorrencias_plantas_daninhas/plantas_atipicas_ocorrencias; dataset_rotulos
+-- precisa existir depois de fotografias).
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto; -- gen_random_uuid()
 CREATE EXTENSION IF NOT EXISTS postgis;  -- tipos geometry (Point, Polygon)
@@ -158,7 +159,7 @@ CREATE TABLE fotografias (
 
 CREATE TABLE modelos_versoes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tipo_modelo VARCHAR(30), -- pragas, doencas, plantas_atipicas, ndvi
+  tipo_modelo VARCHAR(30), -- pragas, doencas, plantas_daninhas, plantas_atipicas, ndvi, reconhecimento_visual
   versao VARCHAR(20),
   data_treino DATE,
   metricas_validacao JSONB, -- {"acuracia": 0.91, "precisao": 0.88, ...}
@@ -203,6 +204,26 @@ CREATE TABLE ocorrencias_doencas (
   talhao_id UUID REFERENCES talhoes(id),
   doenca_id UUID REFERENCES doencas_catalogo(id),
   severidade_percentual NUMERIC(5,2),
+  estadio_cultura VARCHAR(30),
+  modelo_versao_id UUID REFERENCES modelos_versoes(id),
+  confianca_modelo NUMERIC(4,3),
+  validado_por UUID REFERENCES usuarios(id),
+  data DATE DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE plantas_daninhas_catalogo (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome_comum VARCHAR(150),
+  nome_cientifico VARCHAR(150),
+  ciclo VARCHAR(20) -- anual, perene
+);
+
+CREATE TABLE ocorrencias_plantas_daninhas (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fotografia_id UUID REFERENCES fotografias(id),
+  talhao_id UUID REFERENCES talhoes(id),
+  planta_daninha_id UUID REFERENCES plantas_daninhas_catalogo(id),
+  nivel_infestacao VARCHAR(20),
   estadio_cultura VARCHAR(30),
   modelo_versao_id UUID REFERENCES modelos_versoes(id),
   confianca_modelo NUMERIC(4,3),

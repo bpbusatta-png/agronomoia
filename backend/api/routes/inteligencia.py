@@ -10,16 +10,27 @@ from core.logging import log_operacao
 from core.roles import admin_ou_rt, campo_ou_rt_ou_admin
 from models import ValidacaoHumana
 from schemas.colheita import ColheitaCreate, ColheitaRead, ColheitaUpdate
+from schemas.dataset_rotulo import DatasetRotuloCreate
 from schemas.doenca_catalogo import DoencaCatalogoCreate, DoencaCatalogoRead, DoencaCatalogoUpdate
 from schemas.modelo_versao import ModeloVersaoCreate, ModeloVersaoRead, ModeloVersaoUpdate
 from schemas.ndvi_leitura import NdviLeituraCreate, NdviLeituraRead, NdviLeituraUpdate
 from schemas.ocorrencia_doenca import OcorrenciaDoencaCreate, OcorrenciaDoencaRead, OcorrenciaDoencaUpdate
+from schemas.ocorrencia_planta_daninha import (
+    OcorrenciaPlantaDaninhaCreate,
+    OcorrenciaPlantaDaninhaRead,
+    OcorrenciaPlantaDaninhaUpdate,
+)
 from schemas.ocorrencia_praga import OcorrenciaPragaCreate, OcorrenciaPragaRead, OcorrenciaPragaUpdate
 from schemas.planta_atipica_ocorrencia import (
     PlantaAtipicaOcorrenciaCreate,
     PlantaAtipicaOcorrenciaRead,
     PlantaAtipicaOcorrenciaUpdate,
     ValidarPlantaAtipicaRequest,
+)
+from schemas.planta_daninha_catalogo import (
+    PlantaDaninhaCatalogoCreate,
+    PlantaDaninhaCatalogoRead,
+    PlantaDaninhaCatalogoUpdate,
 )
 from schemas.praga_catalogo import PragaCatalogoCreate, PragaCatalogoRead, PragaCatalogoUpdate
 from schemas.produtividade_estimativa import (
@@ -28,6 +39,56 @@ from schemas.produtividade_estimativa import (
     ProdutividadeEstimativaUpdate,
 )
 from schemas.validacao_humana import ValidacaoHumanaRead
+
+# --- Acumulo de dataset rotulado (abordagem hibrida acordada com o usuario):
+# toda vez que uma ocorrencia nasce de uma sugestao da IA de visao (tem
+# modelo_versao_id) e tem foto associada, o valor CONFIRMADO PELO HUMANO ao
+# criar o registro vira um rotulo real em dataset_rotulos -- acumulando aos
+# poucos um dataset de verdade para um futuro modelo treinado, sem exigir
+# nenhum passo manual extra do tecnico. Ver docs/02-trilha-b-inteligencia/
+# pipeline-dados-rotulagem.md e core/ai_vision.py.
+
+
+def _acumular_dataset_rotulo(db, tipo_rotulo: str, obj, current_user, rotulo_valor: dict) -> None:
+    if not obj.modelo_versao_id or not obj.fotografia_id:
+        return
+    crud.dataset_rotulos.create(
+        db,
+        DatasetRotuloCreate(fotografia_id=obj.fotografia_id, tipo_rotulo=tipo_rotulo, rotulo_valor=rotulo_valor),
+        rotulado_por=current_user.id,
+    )
+
+
+def _on_create_ocorrencia_praga(db, obj, current_user) -> None:
+    _acumular_dataset_rotulo(
+        db, "pragas", obj, current_user, {"praga_id": str(obj.praga_id) if obj.praga_id else None}
+    )
+
+
+def _on_create_ocorrencia_doenca(db, obj, current_user) -> None:
+    _acumular_dataset_rotulo(
+        db, "doencas", obj, current_user, {"doenca_id": str(obj.doenca_id) if obj.doenca_id else None}
+    )
+
+
+def _on_create_ocorrencia_planta_daninha(db, obj, current_user) -> None:
+    _acumular_dataset_rotulo(
+        db,
+        "plantas_daninhas",
+        obj,
+        current_user,
+        {"planta_daninha_id": str(obj.planta_daninha_id) if obj.planta_daninha_id else None},
+    )
+
+
+def _on_create_planta_atipica(db, obj, current_user) -> None:
+    _acumular_dataset_rotulo(
+        db,
+        "plantas_atipicas",
+        obj,
+        current_user,
+        {"caracteristica_avaliada": obj.caracteristica_avaliada, "conforme_padrao": obj.conforme_padrao},
+    )
 
 routers = [
     crud_router(
@@ -67,6 +128,7 @@ routers = [
         create_dep=campo_ou_rt_ou_admin,
         update_dep=admin_ou_rt,
         delete_dep=admin_ou_rt,
+        on_create=_on_create_ocorrencia_praga,
     ),
     crud_router(
         crud=crud.ocorrencias_doencas,
@@ -78,6 +140,28 @@ routers = [
         create_dep=campo_ou_rt_ou_admin,
         update_dep=admin_ou_rt,
         delete_dep=admin_ou_rt,
+        on_create=_on_create_ocorrencia_doenca,
+    ),
+    crud_router(
+        crud=crud.plantas_daninhas_catalogo,
+        read_schema=PlantaDaninhaCatalogoRead,
+        create_schema=PlantaDaninhaCatalogoCreate,
+        update_schema=PlantaDaninhaCatalogoUpdate,
+        prefix="/plantas-daninhas-catalogo",
+        tag="plantas_daninhas_catalogo",
+        write_dep=admin_ou_rt,
+    ),
+    crud_router(
+        crud=crud.ocorrencias_plantas_daninhas,
+        read_schema=OcorrenciaPlantaDaninhaRead,
+        create_schema=OcorrenciaPlantaDaninhaCreate,
+        update_schema=OcorrenciaPlantaDaninhaUpdate,
+        prefix="/ocorrencias-plantas-daninhas",
+        tag="ocorrencias_plantas_daninhas",
+        create_dep=campo_ou_rt_ou_admin,
+        update_dep=admin_ou_rt,
+        delete_dep=admin_ou_rt,
+        on_create=_on_create_ocorrencia_planta_daninha,
     ),
     crud_router(
         crud=crud.plantas_atipicas_ocorrencias,
@@ -89,6 +173,7 @@ routers = [
         create_dep=campo_ou_rt_ou_admin,
         update_dep=admin_ou_rt,
         delete_dep=admin_ou_rt,
+        on_create=_on_create_planta_atipica,
     ),
     crud_router(
         crud=crud.ndvi_leituras,

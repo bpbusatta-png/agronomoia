@@ -357,6 +357,53 @@ export const ocorrenciasDoencasConfig: EntityConfig = {
   refs: ['talhoes', 'doencas_catalogo', 'fotografias', 'modelos_versoes'],
 }
 
+export const plantasDaninhasCatalogoConfig: EntityConfig = {
+  key: 'plantas_daninhas_catalogo',
+  title: 'Catálogo de Plantas Daninhas',
+  endpoint: '/plantas-daninhas-catalogo',
+  fields: [
+    { name: 'nome_comum', label: 'Nome comum', type: 'text' },
+    { name: 'nome_cientifico', label: 'Nome científico', type: 'text' },
+    {
+      name: 'ciclo',
+      label: 'Ciclo',
+      type: 'select',
+      staticOptions: [
+        { value: 'anual', label: 'Anual' },
+        { value: 'perene', label: 'Perene' },
+      ],
+    },
+  ],
+  columns: [
+    { name: 'nome_comum', label: 'Nome comum' },
+    { name: 'nome_cientifico', label: 'Nome científico' },
+    { name: 'ciclo', label: 'Ciclo' },
+  ],
+}
+
+export const ocorrenciasPlantasDaninhasConfig: EntityConfig = {
+  key: 'ocorrencias_plantas_daninhas',
+  title: 'Ocorrências de Plantas Daninhas',
+  endpoint: '/ocorrencias-plantas-daninhas',
+  fields: [
+    { name: 'talhao_id', label: 'Talhão', type: 'select', required: true, optionsFrom: 'talhoes' },
+    { name: 'planta_daninha_id', label: 'Planta daninha', type: 'select', optionsFrom: 'plantas_daninhas_catalogo' },
+    { name: 'fotografia_id', label: 'Fotografia (opcional)', type: 'select', optionsFrom: 'fotografias' },
+    { name: 'modelo_versao_id', label: 'Modelo de IA (opcional)', type: 'select', optionsFrom: 'modelos_versoes' },
+    { name: 'nivel_infestacao', label: 'Nível de infestação', type: 'text' },
+    { name: 'estadio_cultura', label: 'Estádio da cultura', type: 'text' },
+    { name: 'confianca_modelo', label: 'Confiança do modelo (0-1)', type: 'number' },
+    { name: 'data', label: 'Data', type: 'date' },
+  ],
+  columns: [
+    { name: 'talhao_id', label: 'Talhão' },
+    { name: 'planta_daninha_id', label: 'Planta daninha' },
+    { name: 'nivel_infestacao', label: 'Nível de infestação' },
+    { name: 'data', label: 'Data' },
+  ],
+  refs: ['talhoes', 'plantas_daninhas_catalogo', 'fotografias', 'modelos_versoes'],
+}
+
 export const plantasAtipicasConfig: EntityConfig = {
   key: 'plantas_atipicas',
   title: 'Plantas Atípicas',
@@ -490,6 +537,8 @@ export const allConfigs: Record<string, EntityConfig> = {
   doencas_catalogo: doencasCatalogoConfig,
   ocorrencias_pragas: ocorrenciasPragasConfig,
   ocorrencias_doencas: ocorrenciasDoencasConfig,
+  plantas_daninhas_catalogo: plantasDaninhasCatalogoConfig,
+  ocorrencias_plantas_daninhas: ocorrenciasPlantasDaninhasConfig,
   plantas_atipicas: plantasAtipicasConfig,
   ndvi_leituras: ndviLeiturasConfig,
   produtividade_estimativas: produtividadeEstimativasConfig,

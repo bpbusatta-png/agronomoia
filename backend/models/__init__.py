@@ -15,8 +15,10 @@ from models.fotografia import Fotografia
 from models.modelo_versao import ModeloVersao
 from models.praga_catalogo import PragaCatalogo
 from models.doenca_catalogo import DoencaCatalogo
+from models.planta_daninha_catalogo import PlantaDaninhaCatalogo
 from models.ocorrencia_praga import OcorrenciaPraga
 from models.ocorrencia_doenca import OcorrenciaDoenca
+from models.ocorrencia_planta_daninha import OcorrenciaPlantaDaninha
 from models.planta_atipica_ocorrencia import PlantaAtipicaOcorrencia
 from models.ndvi_leitura import NdviLeitura
 from models.produtividade_estimativa import ProdutividadeEstimativa
@@ -45,8 +47,10 @@ __all__ = [
     "ModeloVersao",
     "PragaCatalogo",
     "DoencaCatalogo",
+    "PlantaDaninhaCatalogo",
     "OcorrenciaPraga",
     "OcorrenciaDoenca",
+    "OcorrenciaPlantaDaninha",
     "PlantaAtipicaOcorrencia",
     "NdviLeitura",
     "ProdutividadeEstimativa",

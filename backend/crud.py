@@ -24,9 +24,11 @@ from models import (
     ModeloVersao,
     NdviLeitura,
     OcorrenciaDoenca,
+    OcorrenciaPlantaDaninha,
     OcorrenciaPraga,
     Papel,
     PlantaAtipicaOcorrencia,
+    PlantaDaninhaCatalogo,
     PragaCatalogo,
     ProdutividadeEstimativa,
     Safra,
@@ -53,11 +55,19 @@ from schemas.log_predicao_ia import LogPredicaoIACreate
 from schemas.modelo_versao import ModeloVersaoCreate, ModeloVersaoUpdate
 from schemas.ndvi_leitura import NdviLeituraCreate, NdviLeituraUpdate
 from schemas.ocorrencia_doenca import OcorrenciaDoencaCreate, OcorrenciaDoencaUpdate
+from schemas.ocorrencia_planta_daninha import (
+    OcorrenciaPlantaDaninhaCreate,
+    OcorrenciaPlantaDaninhaUpdate,
+)
 from schemas.ocorrencia_praga import OcorrenciaPragaCreate, OcorrenciaPragaUpdate
 from schemas.papel import PapelCreate, PapelUpdate
 from schemas.planta_atipica_ocorrencia import (
     PlantaAtipicaOcorrenciaCreate,
     PlantaAtipicaOcorrenciaUpdate,
+)
+from schemas.planta_daninha_catalogo import (
+    PlantaDaninhaCatalogoCreate,
+    PlantaDaninhaCatalogoUpdate,
 )
 from schemas.praga_catalogo import PragaCatalogoCreate, PragaCatalogoUpdate
 from schemas.produtividade_estimativa import (
@@ -152,8 +162,14 @@ fotografias = CRUDBase[Fotografia, FotografiaCreate, FotografiaUpdate](Fotografi
 modelos_versoes = CRUDBase[ModeloVersao, ModeloVersaoCreate, ModeloVersaoUpdate](ModeloVersao)
 pragas_catalogo = CRUDBase[PragaCatalogo, PragaCatalogoCreate, PragaCatalogoUpdate](PragaCatalogo)
 doencas_catalogo = CRUDBase[DoencaCatalogo, DoencaCatalogoCreate, DoencaCatalogoUpdate](DoencaCatalogo)
+plantas_daninhas_catalogo = CRUDBase[
+    PlantaDaninhaCatalogo, PlantaDaninhaCatalogoCreate, PlantaDaninhaCatalogoUpdate
+](PlantaDaninhaCatalogo)
 ocorrencias_pragas = CRUDBase[OcorrenciaPraga, OcorrenciaPragaCreate, OcorrenciaPragaUpdate](OcorrenciaPraga)
 ocorrencias_doencas = CRUDBase[OcorrenciaDoenca, OcorrenciaDoencaCreate, OcorrenciaDoencaUpdate](OcorrenciaDoenca)
+ocorrencias_plantas_daninhas = CRUDBase[
+    OcorrenciaPlantaDaninha, OcorrenciaPlantaDaninhaCreate, OcorrenciaPlantaDaninhaUpdate
+](OcorrenciaPlantaDaninha)
 plantas_atipicas_ocorrencias = CRUDBase[
     PlantaAtipicaOcorrencia, PlantaAtipicaOcorrenciaCreate, PlantaAtipicaOcorrenciaUpdate
 ](PlantaAtipicaOcorrencia)

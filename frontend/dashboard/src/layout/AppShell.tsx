@@ -31,10 +31,13 @@ const NAV_SECTIONS = [
   {
     title: 'Inteligência',
     items: [
+      { to: '/reconhecimento', label: 'Reconhecimento IA' },
       { to: '/pragas-catalogo', label: 'Catálogo de Pragas' },
       { to: '/ocorrencias-pragas', label: 'Ocorrências de Pragas' },
       { to: '/doencas-catalogo', label: 'Catálogo de Doenças' },
       { to: '/ocorrencias-doencas', label: 'Ocorrências de Doenças' },
+      { to: '/plantas-daninhas-catalogo', label: 'Catálogo de Plantas Daninhas' },
+      { to: '/ocorrencias-plantas-daninhas', label: 'Ocorrências de Plantas Daninhas' },
       { to: '/plantas-atipicas', label: 'Plantas Atípicas' },
       { to: '/ndvi-leituras', label: 'NDVI' },
       { to: '/produtividade-estimativas', label: 'Produtividade' },
