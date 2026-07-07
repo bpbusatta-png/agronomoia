@@ -98,6 +98,25 @@ uvicorn main:app --reload
 ```
 `GET /api/health` deve responder `200 {"status":"ok"}` com o banco no ar.
 
+### Testes automatizados (backend)
+
+Suíte pytest cobrindo autenticação/JWT, RBAC e o gate de validação humana de plantas atípicas, rodando contra um banco Postgres real (mesma instância portátil, banco separado) com isolamento por transação (cada teste faz rollback ao final — não precisa recriar o schema entre execuções).
+
+Criar o banco de testes uma vez:
+```
+C:\Users\User\pgportable\pgsql\bin\createdb.exe -h 127.0.0.1 -p 5433 -U postgres agronomo_ia_test
+C:\Users\User\pgportable\pgsql\bin\psql.exe -h 127.0.0.1 -p 5433 -U postgres -d agronomo_ia_test -f backend\db\schema.sql
+```
+
+Instalar dependências de teste e rodar:
+```
+cd backend
+.venv\Scripts\activate
+pip install -r requirements-dev.txt
+pytest
+```
+Por padrão os testes usam `agronomo_ia_test` na porta 5433 (mesmo servidor portátil do dev); para apontar para outro banco, defina `TEST_DATABASE_URL` antes de rodar.
+
 ### Primeiro acesso (seed)
 
 Como a criação de usuários exige um Administrador autenticado, rode uma vez em um banco novo:
@@ -147,4 +166,4 @@ Escaneie o QR code com o Expo Go (Android/iOS) ou pressione `w` para abrir no na
 
 ## Status
 
-Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Upload de arquivos (fotos) via MinIO local (S3-compatível). Dashboard web (React + TypeScript + Tailwind) com login e CRUD completo de todas as trilhas — núcleo organizacional, monitoramento de campo e inteligência especializada (incluindo o fluxo de validação humana obrigatória de plantas atípicas) — validado no navegador. App de campo (React Native + Expo) com login, lista de talhões (somente leitura, cache local) e cadastro offline-first de inspeções, fotografias, aplicações, análises de solo e ocorrências de pragas/doenças (fila de sincronização genérica com reenvio automático contra `sincronizacao_log`), validado via Expo web. Próximos passos: histórico climático e telas mais analíticas (NDVI, produtividade, colheita, validação de plantas atípicas) permanecem só no dashboard web; ou revisão/ajustes do que já existe. Contexto geral em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).
+Todo o schema de banco de dados (schema.sql) tem CRUD implementado e validado: Trilha A (núcleo organizacional), Trilha B (monitoramento de campo + inteligência especializada, com gate humano obrigatório para plantas atípicas), Trilha C (validações humanas, log de predições de IA, consentimentos LGPD) e Trilha D (log de sincronização mobile). Autenticação JWT, RBAC e logging de auditoria cobrem todos os endpoints. Upload de arquivos (fotos) via MinIO local (S3-compatível). Dashboard web (React + TypeScript + Tailwind) com login e CRUD completo de todas as trilhas — núcleo organizacional, monitoramento de campo e inteligência especializada (incluindo o fluxo de validação humana obrigatória de plantas atípicas) — validado no navegador. App de campo (React Native + Expo) com login, lista de talhões (somente leitura, cache local) e cadastro offline-first de inspeções, fotografias, aplicações, análises de solo e ocorrências de pragas/doenças (fila de sincronização genérica com reenvio automático contra `sincronizacao_log`), validado via Expo web. Backend com suíte automatizada pytest (28 testes: autenticação/JWT, RBAC, gate de validação humana, upload de arquivos) rodando contra banco de testes real com isolamento por transação. Próximos passos: histórico climático e telas mais analíticas (NDVI, produtividade, colheita, validação de plantas atípicas) permanecem só no dashboard web; frontend/mobile ainda sem testes automatizados; ou revisão/ajustes do que já existe. Contexto geral em [docs/00-fundacao/fase-0-fundacao-e-governanca.md](docs/00-fundacao/fase-0-fundacao-e-governanca.md).

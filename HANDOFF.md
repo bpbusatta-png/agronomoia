@@ -110,7 +110,7 @@ npx expo start --web
 ## O que falta / próximos passos possíveis
 
 - **Mobile**: histórico climático e telas mais analíticas (NDVI, produtividade, colheita, validação de plantas atípicas) só existem no dashboard web ainda.
-- **Testes automatizados**: nenhum teste unitário/integração foi escrito; toda validação nesta sessão foi manual (curl + navegador).
+- **Testes automatizados**: backend agora tem suíte pytest (28 testes, `backend/tests/`) cobrindo login/refresh JWT, RBAC do núcleo organizacional, gate de validação humana de plantas atípicas e upload de arquivos (mockado, sem depender do MinIO rodando) — roda contra banco Postgres real separado (`agronomo_ia_test`) com isolamento por rollback de transação. Ver seção "Testes automatizados (backend)" no `README.md`. Frontend (dashboard/mobile) segue sem testes automatizados; validação continua manual (curl + navegador).
 - **CI/CD**: inexistente.
 - **Storage em produção**: MinIO local funciona para dev; produção exigiria AWS S3/Cloudflare R2 real com URLs assinadas (hoje o bucket é público para simplificar o MVP local).
 - **Emulador mobile real**: todo o app mobile foi validado via Expo web; testar em um dispositivo/emulador Android ou iOS de verdade ainda não foi feito.
