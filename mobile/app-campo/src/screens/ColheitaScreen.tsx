@@ -102,7 +102,13 @@ export function ColheitaScreen() {
       </Pressable>
 
       <Text style={styles.label}>Quantidade (kg)</Text>
-      <TextInput style={styles.input} value={quantidadeKg} onChangeText={setQuantidadeKg} keyboardType="numeric" />
+      <TextInput
+        style={styles.input}
+        value={quantidadeKg}
+        onChangeText={setQuantidadeKg}
+        keyboardType="numeric"
+        testID="quantidade-kg-input"
+      />
 
       <Text style={styles.label}>Umidade na colheita (%)</Text>
       <TextInput style={styles.input} value={umidade} onChangeText={setUmidade} keyboardType="numeric" />

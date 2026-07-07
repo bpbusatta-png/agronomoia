@@ -46,6 +46,22 @@ Requer o [backend](../../backend) rodando (com o [MinIO](../../README.md#armazen
 
 Navegação entre as 14 telas é uma barra de abas rolável horizontalmente em `App.tsx` (sem biblioteca de navegação).
 
+## Testes automatizados
+
+Suíte Jest + React Native Testing Library (44 testes) cobrindo `db.ts` (cache/fila genéricos), `sync.ts` (retry pendente+erro, upload de fotos em dois passos), `api.ts` (injeção de token, refresh em 401), `tokenStorage.ts`, `AuthContext` e duas telas representativas (`ColheitaScreen` — cadastro offline-first; `ReconhecimentoScreen` — câmera/galeria + classificação).
+
+```
+npm test
+```
+
+Notas específicas deste setup (SDK 57 + React 19 + RNTL v14):
+- `Platform.OS` é forçado para `'web'` no setup (`src/test/setup.ts`) — os testes exercitam o mesmo caminho de código já validado via Expo web nesta sessão (`localStorage` em vez de `expo-sqlite`/`expo-secure-store`), evitando ter que mockar módulos nativos.
+- `render`, `renderHook` e todo `fireEvent.*` desta versão do RNTL são **assíncronos** — sempre `await`. Sem isso os testes rodam com estado desatualizado (falha silenciosa, não erro).
+- Sem `getByLabelText` utilizável (os `TextInput` não têm `accessibilityLabel`, só um `<Text>` irmão como rótulo visual) — os testes usam `testID` explícito nos campos que precisam ser preenchidos.
+- `axios-mock-adapter` testa os interceptors de `api.ts` de verdade (token injetado, refresh em 401), em vez de mockar o módulo `axios` inteiro.
+
+CI: `.github/workflows/mobile-tests.yml` roda `tsc --noEmit` + a suíte a cada push/pull request.
+
 ## Próximos passos (fora desta leva)
 
-Histórico climático e modelos de IA (ficam só no dashboard web — dado mais administrativo, `Tecnico_Campo` não tem permissão de escrita e não haveria uso de campo). Testar em emulador/dispositivo Android/iOS de verdade (só validado via Expo web até aqui). Automatizar testes (nenhuma tela do mobile tem teste automatizado ainda).
+Histórico climático e modelos de IA (ficam só no dashboard web — dado mais administrativo, `Tecnico_Campo` não tem permissão de escrita e não haveria uso de campo). Testar em emulador/dispositivo Android/iOS de verdade (só validado via Expo web até aqui).
