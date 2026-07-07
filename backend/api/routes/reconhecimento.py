@@ -61,7 +61,7 @@ async def classificar(
     except AIVisionNotConfigured:
         raise HTTPException(
             status_code=503,
-            detail="Reconhecimento por IA não configurado (defina ANTHROPIC_API_KEY no backend).",
+            detail="Reconhecimento por IA não configurado (defina GEMINI_API_KEY no backend).",
         )
     except Exception:
         logger.exception("Falha ao consultar a IA de reconhecimento (POST /reconhecimento/classificar)")

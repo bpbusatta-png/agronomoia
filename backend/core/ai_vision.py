@@ -1,9 +1,9 @@
-import base64
 import json
 import re
 from typing import Optional, TypedDict
 
-import anthropic
+from google import genai
+from google.genai import types
 
 from core.config import settings
 
@@ -51,36 +51,29 @@ def _extrair_json(texto: str) -> dict:
 def classificar_imagem(
     image_bytes: bytes, content_type: str, tipo_esperado: Optional[str] = None
 ) -> ClassificacaoIA:
-    if not settings.anthropic_api_key:
-        raise AIVisionNotConfigured("ANTHROPIC_API_KEY não configurada")
+    if not settings.gemini_api_key:
+        raise AIVisionNotConfigured("GEMINI_API_KEY não configurada")
 
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    client = genai.Client(api_key=settings.gemini_api_key)
 
     prompt = "Analise esta foto de lavoura e classifique-a conforme instruído."
     if tipo_esperado:
         prompt += f' O usuário indicou que espera encontrar: "{tipo_esperado}".'
 
-    image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
-
-    response = client.messages.create(
-        model=settings.anthropic_vision_model,
-        max_tokens=512,
-        system=_SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image",
-                        "source": {"type": "base64", "media_type": content_type, "data": image_b64},
-                    },
-                    {"type": "text", "text": prompt},
-                ],
-            }
+    response = client.models.generate_content(
+        model=settings.gemini_vision_model,
+        contents=[
+            types.Part.from_bytes(data=image_bytes, mime_type=content_type),
+            prompt,
         ],
+        config=types.GenerateContentConfig(
+            system_instruction=_SYSTEM_PROMPT,
+            response_mime_type="application/json",
+            max_output_tokens=512,
+        ),
     )
 
-    texto_resposta = "".join(block.text for block in response.content if block.type == "text")
+    texto_resposta = response.text or ""
 
     try:
         dados = _extrair_json(texto_resposta)

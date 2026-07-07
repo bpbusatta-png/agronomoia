@@ -20,8 +20,8 @@ class Settings(BaseSettings):
     storage_bucket: str = "agronomo-ia"
     storage_public_url: str = "http://localhost:9000/agronomo-ia"
 
-    anthropic_api_key: str = ""
-    anthropic_vision_model: str = "claude-sonnet-5"
+    gemini_api_key: str = ""
+    gemini_vision_model: str = "gemini-2.0-flash"
 
 
 settings = Settings()
