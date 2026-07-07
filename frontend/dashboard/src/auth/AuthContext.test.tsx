@@ -51,6 +51,30 @@ describe('AuthContext', () => {
     await waitFor(() => expect(result.current.isAuthenticated).toBe(true))
   })
 
+  it('login stores the email and exposes it as userEmail', async () => {
+    mockedAxios.post.mockResolvedValueOnce({
+      data: { access_token: 'abc123', refresh_token: 'refresh456' },
+    })
+
+    const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+    await act(async () => {
+      await result.current.login('admin@agronomo.ia', 'senha123')
+    })
+
+    expect(localStorage.getItem('user_email')).toBe('admin@agronomo.ia')
+    await waitFor(() => expect(result.current.userEmail).toBe('admin@agronomo.ia'))
+  })
+
+  it('restores userEmail from localStorage on mount', () => {
+    localStorage.setItem('access_token', 'token-existente')
+    localStorage.setItem('user_email', 'rt@agronomo.ia')
+
+    const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+    expect(result.current.userEmail).toBe('rt@agronomo.ia')
+  })
+
   it('login failure rejects and does not authenticate', async () => {
     mockedAxios.post.mockRejectedValueOnce(new Error('credenciais invalidas'))
 
@@ -80,5 +104,19 @@ describe('AuthContext', () => {
     expect(result.current.isAuthenticated).toBe(false)
     expect(localStorage.getItem('access_token')).toBeNull()
     expect(localStorage.getItem('refresh_token')).toBeNull()
+  })
+
+  it('logout also clears the stored email', () => {
+    localStorage.setItem('access_token', 'abc123')
+    localStorage.setItem('user_email', 'admin@agronomo.ia')
+
+    const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+    act(() => {
+      result.current.logout()
+    })
+
+    expect(result.current.userEmail).toBeNull()
+    expect(localStorage.getItem('user_email')).toBeNull()
   })
 })

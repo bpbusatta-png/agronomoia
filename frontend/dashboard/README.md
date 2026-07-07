@@ -17,8 +17,10 @@ Acesse http://localhost:5173. Requer o [backend](../../backend) rodando (com COR
 
 ## Arquitetura
 
-- `src/auth/` — login (JWT via `/api/auth/login`), contexto de autenticação (`localStorage`) e proteção de rotas
+- `src/auth/` — login (JWT via `/api/auth/login`), contexto de autenticação (`localStorage`, incluindo `userEmail` para exibir no header) e proteção de rotas
 - `src/lib/api.ts` — cliente Axios com injeção do token e renovação automática via refresh token em respostas 401
+- `src/layout/AppShell.tsx` — header verde (logo, título, avatar/e-mail do usuário, sair) + sidebar branca com ícones ([lucide-react](https://lucide.dev/)) por seção (Núcleo/Monitoramento/Inteligência), item ativo destacado
+- `src/pages/HomePage.tsx` — dashboard real (não só texto de boas-vindas): cards de estatística (cooperados, talhões, ocorrências, validações pendentes), atalhos de "ações rápidas" e lista dos últimos registros (ocorrências de pragas/doenças/plantas daninhas/atípicas combinadas, ordenadas por data), todos calculados no cliente a partir dos endpoints já existentes — sem endpoint de agregação novo no backend
 - `src/entities/configs.ts` — configuração declarativa de cada entidade: campos do formulário (`text`/`number`/`date`/`select`/`json`/`boolean`/`file`), colunas da tabela, referências de FK para selects (`optionsFrom`) e opções fixas para enums (`staticOptions`, ex: `tipo` de fotografia)
 - `src/components/EntityCrudPage.tsx` — componente genérico de CRUD (listar/criar/editar/excluir) reutilizado por todas as entidades, resolvendo IDs de FK para o rótulo legível usando as listas referenciadas; campos `json` (ex: `nutrientes` de análises de solo) validam o JSON antes de enviar; campos `file` (ex: `url_arquivo` de fotografias) sobem o arquivo para `POST /api/uploads` antes de montar o payload, e preservam o arquivo existente se nenhum novo for escolhido ao editar; aceita `renderExtraAction` para ações extras por linha além de Editar/Excluir
 - `src/pages/PlantasAtipicasPage.tsx` — adiciona o botão "Validar" (gate humano obrigatório) que chama `POST /plantas-atipicas/{id}/validar`, restrito a Administrador/Agronomo_RT
@@ -28,7 +30,7 @@ Adicionar uma nova entidade = criar um `EntityConfig` em `entities/configs.ts`, 
 
 ## Testes automatizados
 
-Suíte Vitest + React Testing Library (30 testes) cobrindo login/logout (`AuthContext`), o gate de rota autenticada (`RequireAuth`), o motor genérico de CRUD (`EntityCrudPage` — listar, criar, editar, excluir, validação de JSON, upload de arquivo, mensagens de erro), o fluxo de validação humana (`PlantasAtipicasPage`) e o reconhecimento por IA (`ReconhecimentoPage`). A API (`../lib/api`) é mockada em cada teste — nenhum teste depende do backend estar no ar.
+Suíte Vitest + React Testing Library (38 testes) cobrindo login/logout + `userEmail` (`AuthContext`), o gate de rota autenticada (`RequireAuth`), o motor genérico de CRUD (`EntityCrudPage` — listar, criar, editar, excluir, validação de JSON, upload de arquivo, mensagens de erro), o fluxo de validação humana (`PlantasAtipicasPage`), o reconhecimento por IA (`ReconhecimentoPage`) e o dashboard (`HomePage` — agregação de estatísticas, resolução de talhão, mensagens de vazio/erro). A API (`../lib/api`) é mockada em cada teste — nenhum teste depende do backend estar no ar.
 
 ```
 npm test        # roda uma vez (usado no CI)
