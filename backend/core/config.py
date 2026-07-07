@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     storage_public_url: str = "http://localhost:9000/agronomo-ia"
 
     gemini_api_key: str = ""
-    gemini_vision_model: str = "gemini-2.0-flash"
+    gemini_vision_model: str = "gemini-2.5-flash"
 
 
 settings = Settings()
