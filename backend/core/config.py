@@ -19,9 +19,12 @@ class Settings(BaseSettings):
     storage_secret_key: str = "minioadmin"
     storage_bucket: str = "agronomo-ia"
     storage_public_url: str = "http://localhost:9000/agronomo-ia"
+    storage_region: str = "us-east-1"
 
     gemini_api_key: str = ""
     gemini_vision_model: str = "gemini-2.5-flash"
+
+    cors_origins: str = "http://localhost:5173,http://localhost:8081"
 
 
 settings = Settings()

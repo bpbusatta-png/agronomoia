@@ -14,7 +14,7 @@ _client = boto3.client(
     aws_access_key_id=settings.storage_access_key,
     aws_secret_access_key=settings.storage_secret_key,
     config=BotoConfig(signature_version="s3v4"),
-    region_name="us-east-1",
+    region_name=settings.storage_region,
 )
 
 _PUBLIC_READ_POLICY = {

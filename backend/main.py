@@ -4,13 +4,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import auth, dados, health, inteligencia, monitoramento, nucleo, reconhecimento, uploads
+from core.config import settings
 from core.storage import ensure_bucket
 
 app = FastAPI(title="Agrônomo IA API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:8081"],
+    allow_origins=settings.cors_origins.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

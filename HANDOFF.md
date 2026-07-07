@@ -133,14 +133,36 @@ Detalhes e comandos (`npm test`, `pytest`, etc.) na seção "Testes automatizado
 - **`@testing-library/react-native` v14 (SDK 57/React 19) mudou comportamento de forma não-óbvia**: `render()`, `renderHook()` e todo `fireEvent.*` (`.press`, `.changeText`) agora retornam `Promise` — esquecer o `await` não dá erro, só produz estado desatualizado nas asserções seguintes (falha silenciosa/confusa, não um erro claro). Também não existe mais `UNSAFE_getByType`/`getAllByType`; sem `accessibilityLabel` nos campos, a única forma confiável de mirar um `TextInput` específico é `testID` explícito.
 - **Mobile em dispositivo físico exigiu baixar o SDK do Expo duas vezes**: testado via Expo Go num Android real (não só Expo web). Primeiro erro: "Project is incompatible with this version of Expo Go" no SDK 57 — o app da Play Store ainda não suporta esse SDK. Atualizar o Expo Go não resolveu (o app da loja simplesmente não tinha suporte a 57 ainda). Rebaixado para SDK 56 → mesmo erro idêntico mesmo após reiniciar o servidor (sinal de que não era timing/cache). O usuário então informou que o Expo Go instalado é da geração de **SDK 54** — rebaixado para `54.0.35` (`npx expo install expo@54.0.35 && npx expo install --fix`, seguido de `rm -rf node_modules package-lock.json && npm install` pra evitar conflitos de resolução parcial do npm) e conectou. `expo-file-system/legacy` (workaround do SDK 57) continua existindo no 54, sem precisar mudar nada nas telas. Os 44 testes do mobile passaram sem alteração em todas as versões testadas (57/56/54) — só ficaram mais lentos no primeiro run após cada troca de dependências (cache frio, não regressão real). Para conectar um dispositivo físico: `--host 0.0.0.0` no uvicorn (já default em `.claude/launch.json`) + `mobile-app-campo-device` (novo, roda `expo start --lan` em vez de `--web`) + `EXPO_PUBLIC_API_URL` do mobile apontando pro IP LAN da máquina (não `localhost`) + Expo Go conectando em `exp://<ip-lan>:8081`.
 
+## Deploy de produção (Supabase + Railway + Vercel)
+
+Repositório publicado em [github.com/bpbusatta-png/agronomoia](https://github.com/bpbusatta-png/agronomoia) (branch `main`). Arquitetura de produção decidida com o usuário:
+
+- **Supabase**: Postgres gerenciado com PostGIS (substitui o Postgres portátil local) + Supabase Storage (substitui o MinIO local) — mesmo projeto/conta pros dois.
+- **Railway**: hospeda o backend FastAPI (processo Python persistente — não roda bem em serverless/Vercel). Usa `backend/Procfile` (`web: uvicorn main:app --host 0.0.0.0 --port $PORT`), root directory `backend`.
+- **Vercel**: hospeda o dashboard React (Vite). Usa `frontend/dashboard/vercel.json` (rewrite de SPA pro `BrowserRouter` funcionar em rotas diretas), root directory `frontend/dashboard`, env var `VITE_API_URL` apontando pro backend no Railway.
+
+Mudanças de código feitas para viabilizar isso (nenhuma delas quebra o setup local, que continua usando os defaults de sempre):
+- `CORS_ORIGINS` (novo, em `core/config.py`/`.env`) — lista de origens por vírgula, substituindo a lista hardcoded que só aceitava `localhost`. Precisa incluir o domínio final do Vercel.
+- `STORAGE_REGION` (novo) — MinIO ignora região, mas o Supabase Storage exige a região real do projeto pra assinar as requisições S3 corretamente.
+
+Passos manuais (só o usuário pode fazer, exigem login nas contas dele) — ordem importa, pois Railway depende do `DATABASE_URL` do Supabase e Vercel depende da URL do Railway:
+
+1. **Supabase**: criar projeto → habilitar extensão PostGIS (Database → Extensions) → rodar `backend/db/schema.sql` no SQL Editor → criar bucket de Storage `agronomo-ia` marcado público → gerar chaves S3 em Storage → Settings → S3 Access Keys → anotar a região do projeto
+2. **Railway**: novo serviço a partir do repo GitHub → root directory `backend` → env vars: `DATABASE_URL` (connection string do Supabase, dialeto `postgresql+psycopg2://`), `SECRET_KEY` (gerar novo), `STORAGE_*` (chaves S3 do Supabase) + `STORAGE_REGION`, `GEMINI_API_KEY`, `CORS_ORIGINS` (provisório, só o domínio do Railway) → deploy → testar `GET /api/health`
+3. **Vercel**: novo projeto a partir do mesmo repo → root directory `frontend/dashboard` → env var `VITE_API_URL=https://<app>.up.railway.app/api` → deploy
+4. Voltar no Railway e atualizar `CORS_ORIGINS` com o domínio final do Vercel → redeploy
+5. Criar o primeiro admin em produção via `backend/scripts/seed_admin.py` (rodando local, apontando `DATABASE_URL` pro Supabase) e testar login end-to-end pelo dashboard publicado
+
+Ainda não migrado para o mobile (`EXPO_PUBLIC_API_URL`) — o app de campo continua testado só localmente (Expo web + Android físico via LAN), publicar o app em si (EAS Build/App Store/Play Store) não foi discutido ainda.
+
 ## O que falta / próximos passos possíveis
 
 - **Mobile**: histórico climático e modelos de IA só existem no dashboard web ainda (dado mais administrativo, sem uso de campo).
 - **iOS real**: mobile testado em Expo web e num Android físico via Expo Go; iOS ainda não testado (sem dispositivo/máquina Mac disponível nesta sessão).
-- **Storage em produção**: MinIO local funciona para dev; produção exigiria AWS S3/Cloudflare R2 real com URLs assinadas (hoje o bucket é público para simplificar o MVP local).
+- **Storage em produção**: decidido usar Supabase Storage (ver seção "Deploy de produção" acima) — ainda não executado (falta o usuário criar o bucket/chaves no painel do Supabase). Bucket público por padrão para simplificar o MVP; URLs assinadas com expiração ficam para depois se a exposição pública virar problema.
 - **Dataset de reconhecimento por IA ainda é pequeno**: o acúmulo híbrido em `dataset_rotulos` começou a rodar nesta sessão — ainda não há volume suficiente para considerar treinar um modelo próprio (ver checklist em [docs/02-trilha-b-inteligencia/pipeline-dados-rotulagem.md](docs/02-trilha-b-inteligencia/pipeline-dados-rotulagem.md)).
 - **Acessibilidade do dashboard**: `<label>` dos formulários (`EntityCrudPage.tsx`, `LoginPage.tsx`) não têm `htmlFor`/`id` ligando ao input — sinalizado como tarefa separada (ver chip de sugestão gerado durante a sessão).
-- **CI ainda não roda de verdade**: os 3 workflows (`backend-tests.yml`, `frontend-tests.yml`, `mobile-tests.yml`) existem e foram validados localmente, mas só disparam quando o repositório for publicado num remote do GitHub (ainda não configurado).
+- **CI**: os 3 workflows (`backend-tests.yml`, `frontend-tests.yml`, `mobile-tests.yml`) já rodam de verdade — repositório publicado em [github.com/bpbusatta-png/agronomoia](https://github.com/bpbusatta-png/agronomoia). Vale conferir a aba Actions do repo para confirmar que passaram no ambiente hospedado (pode haver diferenças do ambiente local).
 - **ERP externo** (mencionado pelo usuário): núcleo organizacional hoje só recebe dados via CRUD manual; integração futura com ERP ainda não tem design (ver memória do projeto).
 
 ## Commits desta sessão (ordem cronológica)
